@@ -18,6 +18,8 @@ vcftools --vcf /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOf
 
 In total we obtained a dataset of 710 individuals
 
+## Analysis of Population Structure
+
 Let's remouve SNPs that are in linkage using the thinning option in vcf tool. This command will select a SNPs every 1Kbp. Considering the low LD present in Olive (~250bp) we can consider this window appropriate.
 
 ```
@@ -45,93 +47,99 @@ pop_stru = snmf("genotypes.geno", K = 1:15, entropy = TRUE, repetitions = 10, pr
 jpeg(file = "/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/genotypes.snmf/cross_entropy_decay.JPEG")
 plot(pop_stru, col = "blue", pch = 19, cex = 1.2)
 dev.off()
+```
+![cross_entropy_decay](https://github.com/user-attachments/assets/a6c19ee9-11bb-4903-bc76-f1d742c207a0)
 
-plot K2
+Print Q matrixes for K runs from K2 to K4
+
+```
 
 best = which.min(cross.entropy(pop_stru, K = 2))
 qmatrix_K2 = Q(pop_stru, K = 2, run = best)
 
-
-read.table("/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/genotypes.snmf/Pop_list.txt", header = T)
-POP_matrixK2<-cbind(POP_info, qmatrix_K2)
-POP_matrixK2 <- POP_matrixK2 %>%
-  pivot_longer(cols = starts_with("V"), 
-               names_to = "Cluster", 
-               values_to = "Ancestry")
-
-Create the Bar Plot
-
-K2<-ggplot(POP_matrixK2, aes(x = IND, y = Ancestry, fill = Cluster)) +
-  geom_bar(stat = "identity") +
-  theme_minimal() +
-  labs(x = "Individuals", y = "Ancestry Proportion") +
-  scale_fill_manual(values = c("#E41A1C", "#377EB8")) + # Customize colors
-  facet_grid(~POP, scales = "free_x", space = "free_x") # Separate by population
-theme(
-    strip.text.x = element_text(size = 7),  # Reduce POP facet label size
-    strip.background = element_blank()  # Remove background for a cleaner look
-  )
-
-jpeg(file = "/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/genotypes.snmf/K2barplot",width = 15, height = 3, units = "cm", res = 800)
-K2
-dev.off()
-
-
-plot K3
-
 best = which.min(cross.entropy(pop_stru, K = 3))
 qmatrix_K3 = Q(pop_stru, K = 3, run = best)
-POP_matrixK3<-cbind(POP_info, qmatrix_K3)
-POP_matrixK3 <- POP_matrixK3 %>%
-  pivot_longer(cols = starts_with("V"), 
-               names_to = "Cluster", 
-               values_to = "Ancestry")
 
-Create the Bar Plot
-
-K3<-ggplot(POP_matrixK3, aes(x = IND, y = Ancestry, fill = Cluster)) +
-  geom_bar(stat = "identity") +
-  theme_minimal() +
-  labs(x = "Individuals", y = "Ancestry Proportion") +
-  scale_fill_manual(values = c("#E41A1C", "#377EB8", "green")) + # Customize colors
-  facet_grid(~POP, scales = "free_x", space = "free_x") # Separate by population
-theme(axis.text.x = element_blank(), # Hide individual labels if too many
-        axis.ticks.x = element_blank(),
-        panel.grid = element_blank()) 
-  
-
-jpeg(file = "/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/genotypes.snmf/K3barplot.jpeg",width = 15, height = 3, units = "cm", res = 800)
-K3
-dev.off()
-
-plot K4
 
 best = which.min(cross.entropy(pop_stru, K = 4))
 qmatrix_K4 = Q(pop_stru, K = 4, run = best)
-POP_matrixK4<-cbind(POP_info, qmatrix_K4)
-POP_matrixK4 <- POP_matrixK4 %>%
+
+```
+Plot bar plot for the K runs
+
+```
+K2_Qmatrix<-read.table("K2_Qmatrix.txt", header = T)
+
+
+K2_Qmatrix <- K2_Qmatrix%>%
+  pivot_longer(cols = starts_with("V"), 
+               names_to = "Cluster", 
+               values_to = "Ancestry")
+  
+
+
+K2<-ggplot(K2_Qmatrix, aes(x =IND, y = Ancestry, fill = Cluster)) +
+  geom_bar(stat = "identity", width = 1) +
+  theme_minimal() +
+  labs(x = "Individuals", y = "Ancestry Proportion") +
+  scale_fill_manual(values = c("darkblue", "darkorange")) + # Customize colors
+  theme(
+    axis.text.x = element_blank(),  # Hide individual labels if too many
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank(),
+    panel.spacing = unit(0.1, "lines")) +
+  facet_grid(~POP, scales = "free_x", space = "free") # Separate by population
+
+K2
+
+K3_Qmatrix<-read.table("K3_Qmatrix.txt", header = T)
+
+
+K3_Qmatrix <- K3_Qmatrix%>%
   pivot_longer(cols = starts_with("V"), 
                names_to = "Cluster", 
                values_to = "Ancestry")
 
-Create the Bar Plot
-
-K4<-ggplot(POP_matrixK4, aes(x = IND, y = Ancestry, fill = Cluster)) +
-  geom_bar(stat = "identity") +
+K3<-ggplot(K3_Qmatrix, aes(x =IND, y = Ancestry, fill = Cluster)) +
+  geom_bar(stat = "identity", width = 1) +
   theme_minimal() +
   labs(x = "Individuals", y = "Ancestry Proportion") +
-  scale_fill_manual(values = c("#E41A1C", "#377EB8", "green", "darkblue")) + # Customize colors
+  scale_fill_manual(values = c("darkblue", "darkorange", "gray")) + # Customize colors
+  theme(
+    axis.text.x = element_blank(),  # Hide individual labels if too many
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank(),
+    panel.spacing = unit(0.1, "lines")) +
   facet_grid(~POP, scales = "free_x", space = "free_x") # Separate by population
-theme(axis.text.x = element_blank(), # Hide individual labels if too many
-        axis.ticks.x = element_blank(),
-        panel.grid = element_blank()) 
-  
 
-jpeg(file = "/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/genotypes.snmf/K4barplot.jpeg",width = 15, height = 3, units = "cm", res = 800)
+K3
+
+K4_Qmatrix<-read.table("K4_Qmatrix.txt", header = T)
+
+
+K4_Qmatrix <- K4_Qmatrix%>%
+  pivot_longer(cols = starts_with("V"), 
+               names_to = "Cluster", 
+               values_to = "Ancestry")
+
+K4<-ggplot(K4_Qmatrix, aes(x =IND, y = Ancestry, fill = Cluster)) +
+  geom_bar(stat = "identity", width = 1) +
+  theme_minimal() +
+  labs(x = "Individuals", y = "Ancestry Proportion") +
+  scale_fill_manual(values = c("darkblue", "darkorange", "gray", "darkgreen")) + # Customize colors
+  theme(
+    axis.text.x = element_blank(),  # Hide individual labels if too many
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank(),
+    panel.spacing = unit(0.1, "lines")) +
+  facet_grid(~POP, scales = "free_x", space = "free_x") # Separate by population
+
 K4
-dev.off()
+
+ggarrange(K2,K3,K4,nrow=3,ncol=1)
 
 ```
+![image](https://github.com/user-attachments/assets/4b6c3f9c-eca6-4750-a509-9b31d729fb92)
 
 
 
