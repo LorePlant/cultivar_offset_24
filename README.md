@@ -154,6 +154,16 @@ geno142<-as.data.frame(G142)
 geno142<-geno142%>% select(ends_with(".0"))
 write.geno(geno142, "genotypes.geno")
 pop_stru_142WW = snmf("genotypes.geno", K = 1:15, entropy = TRUE, repetitions = 10, project = "new")
+
+# plot cross-entropy criterion for all runs in the snmf project
+jpeg(file = "/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/PopStructure_142WildWest/cross_entropy_decay_142WW.JPEG")
+plot(pop_strupop_stru_142WW, col = "blue", pch = 19, cex = 1.2)
+dev.off()
+
+best = which.min(cross.entropy(pop_stru_142WW, K = 2))
+qmatrix_K2 = Q(pop_stru_142WW, K = 2, run = best)
+wild_info<-read.table("142WildWest.txt")
+write.table(qmatrix_K2,"/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/PopStructure_142WildWest/QmatrixK2_142_WW.txt")
 ```
 
 
