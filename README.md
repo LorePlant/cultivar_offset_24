@@ -139,27 +139,21 @@ K4
 ggarrange(K2,K3,K4,nrow=3,ncol=1)
 
 ```
-![image](https://github.com/user-attachments/assets/4b6c3f9c-eca6-4750-a509-9b31d729fb92)
+![image](https://github.com/user-attachments/assets/735fb6b5-7dfc-41c5-b538-02bdcf8f3e27)
 
+At K4 we can clearly distinguish a specific group present in the WildWest and absent in cultivars and WildEast. Using the ancestry coefficient at K=4 we selected individual q>0.7 for the Wild Weast group. 
+In total 142 individuals have been selected
 
-
-
-
-
-
-
-
-
-
-# select the best run for K = 4 clusters
-
-my.colors <- c("tomato", "lightblue",
-"olivedrab")
-barchart(prova, K = 3, run = best,
-border = NA, space = 0,
-col = my.colors,
-xlab = "Individuals",
-ylab = "Ancestry proportions",
-main = "Ancestry matrix")
+We are going to repat the population structure analysis for the 142 individuals with the aim to define population differentiation among pure wild western olive trees.
 
 ```
+142 WILD WEST
+geno142<- read.vcfR("WW142_lec24_DP10_100_miss090_ind085_thinned.vcf.recode.vcf")#import vcf file
+G142 <- vcfR2genind(geno142)#transfrom file in genind object
+geno142<-as.data.frame(G142)
+geno142<-geno142%>% select(ends_with(".0"))
+write.geno(geno142, "genotypes.geno")
+pop_stru_142WW = snmf("genotypes.geno", K = 1:15, entropy = TRUE, repetitions = 10, project = "new")
+```
+
+
