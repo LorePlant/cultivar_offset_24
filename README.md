@@ -48,7 +48,8 @@ jpeg(file = "/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffs
 plot(pop_stru, col = "blue", pch = 19, cex = 1.2)
 dev.off()
 ```
-![cross_entropy_decay](https://github.com/user-attachments/assets/a6c19ee9-11bb-4903-bc76-f1d742c207a0)
+![image](https://github.com/user-attachments/assets/2c7f1026-c05f-4253-8d50-b910331a0c9b)
+
 
 Print Q matrixes for K runs from K2 to K4 
 
@@ -160,7 +161,8 @@ jpeg(file = "/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffs
 plot(pop_strupop_stru_142WW, col = "blue", pch = 19, cex = 1.2)
 dev.off()
 ```
-![image](https://github.com/user-attachments/assets/98646a3a-e471-4f8f-ba03-94b94f8a63e2)
+![image](https://github.com/user-attachments/assets/af0340ca-87c0-4c7a-838f-29956907743a)
+
 
 
 The cross-entropy coefficient reached a minumum at K=5. We are going to use this partition to construnct the ancestry barplot using ggplot and map the spatial interpolation of ancestry coefficients in the species niche using QGIS.
