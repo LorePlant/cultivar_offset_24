@@ -50,7 +50,7 @@ dev.off()
 ```
 ![cross_entropy_decay](https://github.com/user-attachments/assets/a6c19ee9-11bb-4903-bc76-f1d742c207a0)
 
-Print Q matrixes for K runs from K2 to K4
+Print Q matrixes for K runs from K2 to K4 
 
 ```
 
@@ -65,7 +65,7 @@ best = which.min(cross.entropy(pop_stru, K = 4))
 qmatrix_K4 = Q(pop_stru, K = 4, run = best)
 
 ```
-Plot bar plot for the K runs
+Plot bar plot for the K runs using ggplot
 
 ```
 K2_Qmatrix<-read.table("K2_Qmatrix.txt", header = T)
@@ -141,7 +141,7 @@ ggarrange(K2,K3,K4,nrow=3,ncol=1)
 ```
 ![image](https://github.com/user-attachments/assets/735fb6b5-7dfc-41c5-b538-02bdcf8f3e27)
 
-At K4 we can clearly distinguish a specific group present in the WildWest and absent in cultivars and WildEast. Using the ancestry coefficient at K=4 we selected individual q>0.7 for the Wild Weast group. 
+At K4 we can clearly distinguish a specific group present in the Wil dWest and absent in cultivars and Wild East. Using the ancestry coefficient at K=4 we selected individual q>0.7 for the Wild Weast group. 
 In total 142 individuals have been selected
 
 We are going to repat the population structure analysis for the 142 individuals with the aim to define population differentiation among pure wild western olive trees.
@@ -159,11 +159,43 @@ pop_stru_142WW = snmf("genotypes.geno", K = 1:15, entropy = TRUE, repetitions = 
 jpeg(file = "/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/PopStructure_142WildWest/cross_entropy_decay_142WW.JPEG")
 plot(pop_strupop_stru_142WW, col = "blue", pch = 19, cex = 1.2)
 dev.off()
-
-best = which.min(cross.entropy(pop_stru_142WW, K = 2))
-qmatrix_K2 = Q(pop_stru_142WW, K = 2, run = best)
-wild_info<-read.table("142WildWest.txt")
-write.table(qmatrix_K2,"/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/PopStructure_142WildWest/QmatrixK2_142_WW.txt")
 ```
+![image](https://github.com/user-attachments/assets/98646a3a-e471-4f8f-ba03-94b94f8a63e2)
+
+
+The cross-entropy coefficient reached a minumum at K=5. We are going to use this partition to construnct the ancestry barplot using ggplot and map the spatial interpolation of ancestry coefficients in the species niche using QGIS.
+
+```
+best = which.min(cross.entropy(pop_stru_142WW, K = 5))
+qmatrix_K5 = Q(pop_stru_142WW, K = 5, run = best)
+wild_info<-read.table("142WildWest.txt")
+write.table(qmatrix_K5,"/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/PopStructure_142WildWest/QmatrixK2_142_WW.txt")
+
+K5_Q<-read.table("QmatrixK5_142_WW.txt", header = T)
+w142_info<-read.table("142W_info.txt", header = T)
+K5Q<-cbind(w142_info, K5_Q)
+
+K5Q <- K5Q%>%
+  pivot_longer(cols = starts_with("V"), 
+               names_to = "Cluster", 
+               values_to = "Ancestry")
+K5W<-ggplot(K5Q, aes(x =IND, y = Ancestry, fill = Cluster)) +
+  geom_bar(stat = "identity", width = 1) +
+  theme_minimal() +
+  labs(x = "Individuals", y = "Ancestry Proportion") +
+  scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#CC79A7")) + # Customize colors
+  theme(
+    axis.text.x = element_blank(),  # Hide individual labels if too many
+    axis.ticks.x = element_blank(),
+    panel.grid = element_blank(),
+    panel.spacing = unit(0.1, "lines")) +
+  facet_grid(~POP, scales = "free_x", space = "free") # Separate by population
+
+K5W
+
+```
+![image](https://github.com/user-attachments/assets/070ffca1-a11a-4daa-8f65-ad800ada3e17)
+
+![image](https://github.com/user-attachments/assets/cfccd6b5-cf12-4bea-89ae-462a1be31944)
 
 
