@@ -194,7 +194,7 @@ K5W<-ggplot(K5Q, aes(x =IND, y = Ancestry, fill = Cluster)) +
 K5W
 
 ```
-![image](https://github.com/user-attachments/assets/070ffca1-a11a-4daa-8f65-ad800ada3e17)
+![image](https://github.com/user-attachments/assets/a53b1741-8b0b-45f2-a98c-6131b7ac4921)
 
 ![image](https://github.com/user-attachments/assets/cfccd6b5-cf12-4bea-89ae-462a1be31944)
 
