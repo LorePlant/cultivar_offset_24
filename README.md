@@ -200,4 +200,28 @@ K5W
 
 ![image](https://github.com/user-attachments/assets/cfccd6b5-cf12-4bea-89ae-462a1be31944)
 
+## hybrid index
 
+```
+library(triangulaR)
+# make a pop map
+popmap<-read.table("pop_map_wild_adm.txt", header = T)
+
+  genoLAND.VCF <- read.vcfR("/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/WC710_lec24_DP10_100_miss090_ind085.vcf.recode.vcf")#import vcf file
+
+# Create a new vcfR object composed only of sites above the given allele frequency difference threshold
+vcfR.diff <- alleleFreqDiff(vcfR = genoLAND.VCF, pm = popmap, p1 = "P1", p2 = "P2", difference = 0.8)
+# 2 sites passed allele frequency difference threshold"
+
+> vcfR.diff <- alleleFreqDiff(vcfR = genoLAND.VCF, pm = popmap, p1 = "P1", p2 = "P2", difference = 0.7)
+[1] "3824 sites passed allele frequency difference threshold"
+
+# Calculate hybrid index and heterozygosity for each sample. Values are returned in a data.frame
+hi.het <- hybridIndex(vcfR = vcfR.diff, pm = popmap, p1 = "P1", p2 = "P2")
+
+# Generate colors (or leave blank to use default)
+cols <- c("darkgrey", "purple", "darkgreen")
+# View triangle plot
+jpeg(file = "/lustre/rocchettil/triangular_plot.jpeg")
+triangle.plot(hi.het, colors = cols)
+dev.off()
