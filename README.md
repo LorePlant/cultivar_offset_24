@@ -225,4 +225,5 @@ cols <- c("darkgrey", "purple", "darkorange", "darkgreen")
 triangle.plot(hi.het, colors = cols)
 dev.off()
 ```
-![image](https://github.com/user-attachments/assets/7cff4731-6965-430e-b35c-3483a38a97eb)
+![image](https://github.com/user-attachments/assets/9bc6f516-c560-4385-a606-5538c33ca4e6)
+
