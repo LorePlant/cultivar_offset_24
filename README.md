@@ -202,26 +202,27 @@ K5W
 
 ## hybrid index
 
+142 truly wild genotypes were selected with ancestry q>0.70. To distinguish between historical vs recent introgression, we analyzed the hybrid index using ancestry-informative SNPs. We run the intercalls heterozygosity analysis classyfing as parental group the two wild gene pool Wild East and Wild West.
+The significant admixture present in our collection between wild and cultivated material can be derived from recent crossing forming F1 hybrids or from past generations of crossing where natural selection had the possibilty to act. The GEA identification presume that the associated QTL derived from processes of local adaptation where environmental selection had the generational time to act. In our case the cultivated genome from cultivars vegetatevly progated mainly evolved in the eastern part of the mediterrenan basin, so it is paramount to identify the presence of recent F1 hybrids where the cultivated genome have been recently introduced and where selections did not have the generational time to act.
+
+To investigate the presence of F1 hybrids I identified a recent devoped Rpackage that allow to identified ancestry-informative markers and estimate their hybrids index with the relative presence of F1, BC1, BC2 or past introgression. https://omys-omics.github.io/triangulaR/index.html
+
+In this analysis I used the vcf file that was not filtered for MAF 5%.
+
 ```
 library(triangulaR)
 # make a pop map
 popmap<-read.table("pop_map_wild_adm.txt", header = T)
 
-  genoLAND.VCF <- read.vcfR("/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/WC710_lec24_DP10_100_miss090_ind085.vcf.recode.vcf")#import vcf file
+  genoLAND.VCF <- read.vcfR("/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/WC710_lec24_DP10_100_miss090_ind085_Thinned.recode.vcf")#import vcf file
 
 # Create a new vcfR object composed only of sites above the given allele frequency difference threshold
-vcfR.diff <- alleleFreqDiff(vcfR = genoLAND.VCF, pm = popmap, p1 = "P1", p2 = "P2", difference = 0.8)
-# 2 sites passed allele frequency difference threshold"
+vcfR.diff <- alleleFreqDiff(vcfR = genoLAND.VCF, pm = popmap, p1 = "WW", p2 = "WE", difference = 0.7)
+[1] "2071 sites passed allele frequency difference threshold"
 
-> vcfR.diff <- alleleFreqDiff(vcfR = genoLAND.VCF, pm = popmap, p1 = "P1", p2 = "P2", difference = 0.7)
-[1] "3824 sites passed allele frequency difference threshold"
-
-# Calculate hybrid index and heterozygosity for each sample. Values are returned in a data.frame
-hi.het <- hybridIndex(vcfR = vcfR.diff, pm = popmap, p1 = "P1", p2 = "P2")
-
-# Generate colors (or leave blank to use default)
-cols <- c("darkgrey", "purple", "darkgreen")
-# View triangle plot
-jpeg(file = "/lustre/rocchettil/triangular_plot.jpeg")
+hi.het <- hybridIndex(vcfR = vcfR.diff, pm = popmap, p1 = "WW", p2 = "WE")
+cols <- c("darkgrey", "purple", "darkorange", "darkgreen")
 triangle.plot(hi.het, colors = cols)
 dev.off()
+```
+![image](https://github.com/user-attachments/assets/7cff4731-6965-430e-b35c-3483a38a97eb)
