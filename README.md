@@ -41,7 +41,7 @@ list710<-data.frame(row.names(geno710))
 write.table(list710, "list710.txt")#save individual order
 
 write.geno(geno710, "Pop_stru_710.geno")
-pop_stru = snmf("Pop_stru_710.geno", K = 1:15, entropy = TRUE, repetitions = 10, project = "710PS")
+pop_stru = snmf("Pop_stru_710.geno", K = 1:15, entropy = TRUE, repetitions = 10, project = "new")
 
 # plot cross-entropy criterion for all runs in the snmf project
 jpeg(file = "/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/genotypes.snmf/cross_entropy_decay.JPEG")
