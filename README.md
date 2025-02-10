@@ -35,13 +35,13 @@ R
 setwd("/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24")
 geno710 <- read.vcfR("WC710_lec24_DP10_100_miss090_ind085_Thinned.recode.vcf")#import vcf file
 GI <- vcfR2genind(geno710)#transfrom file in genind object
-geno710<-as.data.frame(gl.genoLAND)
+geno710<-as.data.frame(GI)
 geno710<-geno710%>% select(ends_with(".0"))
+list710<-data.frame(row.names(geno710))
+write.table(list710, "list710.txt")#save individual order
 
-
-write.geno(geno710, "genotypes.geno")
-
-pop_stru = snmf("genotypes.geno", K = 1:15, entropy = TRUE, repetitions = 10, project = "new")
+write.geno(geno710, "Pop_stru_710.geno")
+pop_stru = snmf("Pop_stru_710.geno", K = 1:15, entropy = TRUE, repetitions = 10, project = "710PS")
 
 # plot cross-entropy criterion for all runs in the snmf project
 jpeg(file = "/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/genotypes.snmf/cross_entropy_decay.JPEG")
