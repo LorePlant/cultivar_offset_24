@@ -143,6 +143,7 @@ K4<-ggplot(K4_Qmatrix, aes(x =id, y = Ancestry, fill = Cluster)) +
 K4
 
 ggarrange(K2,K3,K4,nrow=3,ncol=1)
+
 ```
 ![image](https://github.com/user-attachments/assets/22f6cad6-556c-41ea-a115-40603761bd78)
 
@@ -278,5 +279,32 @@ cols <- c("darkgrey", "purple", "darkorange", "darkgreen")
 triangle.plot(hi.het, colors = cols)
 ```
 ![image](https://github.com/user-attachments/assets/bcb97c23-7c9f-463f-8bae-67de89a23833)
+
+The results highlight the large presence of rencet hybrids like F1 and BC1, making the admixed population not suited for landscape genomics and GEA discovery. The potential adaptation of these individuals can be given from phenotypic plasticity and/or hybrid vigor.
+The large part of cultivated material is closer to the WildEast group. Among them only a few hybrids, mainly from Italt Spain and France (Picholine) are considered F1 with the WildWest group. These result confirm the unexplored diversity of WildWest for the Cultivated germplasm.
+Similar results are confirmed as well from PCA analysis
+
+```
+#PCA
+library(FactoMineR)
+library(factoextra)
+
+res.pca708<-PCA(geno708, scale.unit = TRUE, ncp = 5, graph = TRUE)
+ind708 <- get_pca_ind(res.pca708)
+pca_data708 <- as.data.frame(ind708$coord)
+pca_data708<-cbind(popmap, pca_data708)
+qq<-ggplot() +
+  geom_hline(yintercept=0, linetype="dashed", color = gray(.80), linewidth=0.6) +
+  geom_vline(xintercept=0, linetype="dashed", color = gray(.80), linewidth=0.6) +
+  geom_point(data = pca_data708, aes(x=Dim.1, y=Dim.2, color = pop), size = 2.5) +
+  scale_color_manual(values = c("darkgrey", "purple", "darkorange", "darkgreen")) +
+  xlab("PC1: 10%") + ylab("PC2: 5.9%") +
+  guides(color=guide_legend(title="Group")) +
+  theme_bw(base_size = 11, base_family = "Times") +
+  theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
+qq
+```
+![image](https://github.com/user-attachments/assets/581a716a-2c28-46c4-a84c-35a2cab53d3f)
+
 
 
