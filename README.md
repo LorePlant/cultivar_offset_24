@@ -39,23 +39,16 @@ vcftools --vcf /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOf
 Analysis of Population Structure using LEA package
 
 ```
+geno708 <- read.vcfR("WC708_lec24_DP10_100_miss090_ind085_mac1_Thinned.recode.vcf")#import vcf file
+GI <- vcfR2genind(geno708)#transfrom file in genind object
+geno708<-as.data.frame(GI)
+geno708<-geno708%>% select(ends_with(".0"))
+list708<-data.frame(row.names(geno708))
+write.table(list708, "list708.txt")#save individual order
 
-R
-setwd("/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24")
-geno710 <- read.vcfR("WC710_lec24_DP10_100_miss090_ind085_Thinned.recode.vcf")#import vcf file
-GI <- vcfR2genind(geno710)#transfrom file in genind object
-geno710<-as.data.frame(GI)
-geno710<-geno710%>% select(ends_with(".0"))
-list710<-data.frame(row.names(geno710))
-write.table(list710, "list710.txt")#save individual order
+write.geno(geno708, "Pop_stru_708.geno")
 
-write.geno(geno710, "Pop_stru_710.geno")
-pop_stru = snmf("Pop_stru_710.geno", K = 1:15, entropy = TRUE, repetitions = 10, project = "new")
-
-# plot cross-entropy criterion for all runs in the snmf project
-jpeg(file = "/storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/genotypes.snmf/cross_entropy_decay.JPEG")
-plot(pop_stru, col = "blue", pch = 19, cex = 1.2)
-dev.off()
+pop_stru = snmf("Pop_stru_708.geno", K = 1:10, entropy = TRUE, repetitions = 10, project = "new")
 ```
 ![image](https://github.com/user-attachments/assets/2c7f1026-c05f-4253-8d50-b910331a0c9b)
 
