@@ -306,5 +306,42 @@ qq
 ```
 ![image](https://github.com/user-attachments/assets/581a716a-2c28-46c4-a84c-35a2cab53d3f)
 
+## RDA
+
+filtered for MAF
+
+R code
+```
+#enter vcf file
+geno155 <- read.vcfR("D:/vcf_file_GEA_leccino/WC156_lec24_DP10_100_miss090_ind085_mac1_MAF005.vcf.recode.vcf")#import vcf file
+GI <- vcfR2genind(geno155)#transfrom file in genind object
+geno155<-as.data.frame(GI)
+geno155<-geno155%>% select(ends_with(".0"))
+#imputation
+for (i in 1:ncol(geno155))
+{
+  geno155[which(is.na(geno155[,i])),i] <- median(geno155[-which(is.na(geno155[,i])),i], na.rm=TRUE)
+}
+geno155_data<- write.table(geno155, "geno_155.txt")
+# Wild Environment datafile
+
+#standardize bioclim variable
+data_wild<- read.csv("Env_155_WWE.csv", header = TRUE)
+test_env <- data_wild%>% select(long, lat, bio2, bio10, bio11, bio15, bio18, bio19)
+Env <- scale(test_env, center=TRUE, scale=TRUE)
+# Extract the centering values
+env_center <- attr(Env, "scaled:center") #mean of each variable
+# Extract the scaling values
+env_scale <- attr(Env, "scaled:scale") #standard deviation of each variable
+#transform into dataset
+Env <- as.data.frame(Env)
+
+
+#combining geographic, Popstructure, environmental (scaled) variables
+Variables <- data.frame(data_wild$id, data_wild$group,data_wild$region, Env)
+names(Variables)[1]<- paste("geno")
+names(Variables)[2]<- paste("group")
+names(Variables)[3]<- paste("region")
+```
 
 
