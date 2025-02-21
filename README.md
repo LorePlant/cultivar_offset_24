@@ -447,4 +447,79 @@ dev.off()
 hist(qvalue$p.value)
 ```
 ![image](https://github.com/user-attachments/assets/a32731fa-8f4a-4cc6-8596-318219723a26)
+GEA for temperature variables resulted in 6213 SNPs  FDR and among them 172 highly assoicciated Bonferroni correction
+
+>Precipitation
+  ```
+  #latent factor precipitation variable
+  
+  Y <- geno155
+  sel_prec<- data.frame(Env%>% select(bio15, bio18, bio19))
+  write.env(sel_prec, "prec_variable.env")
+  X = read.table("prec_variable.env")
+  mod.lfmm2 <- lfmm2(input = Y, env = X, K = 4)
+  str(mod.lfmm2)
+  mod.lfmm2@U
+  #Merge latent factor to Variable
+  latent_prec<-data.frame(rownames(geno155), mod.lfmm2@U)
+  Prec_Var<-cbind(Variables,latent_prec)
+  
+  ## GEA Precipitation
+  RDA_prec <- rda(geno155 ~ 	bio15	+ bio18 + bio19 +  Condition(X1 + X2 + X3 + X4 ), Prec_Var)
+  summary(eigenvals(RDA_prec, model = "constrained"))
+  
+  rdadapt_prec<- rdadapt(RDA_prec, 2)
+  ## P-values threshold after Bonferroni correction
+  thres_env <- 0.05/length(rdadapt_prec$p.values)
+  ## Identifying the loci that are below the p-value threshold
+  top_outliers <- data.frame(Loci = colnames(geno155)[which(rdadapt_prec$p.values<thres_env)], p.value = rdadapt_prec$p.values[which(rdadapt_prec$p.values<thres_env)], contig = unlist(lapply(strsplit(colnames(geno155)[which(rdadapt_prec$p.values<thres_env)], split = "_"), function(x) x[1])))
+  
+  qvalue <- data.frame(Loci = colnames(geno155), p.value = rdadapt_prec$p.values, q.value = rdadapt_prec$q.value)
+  outliers <- data.frame(Loci = colnames(geno155)[which(rdadapt_prec$q.values<0.05)], p.value = rdadapt_prec$p.values[which(rdadapt_prec$q.values<0.05)])
+  
+  #plot GEA precipitation
+  locus_scores <- scores(RDA_prec, choices=c(1:2), display="species", scaling="sites")
+  TAB_loci <- data.frame(names = row.names(locus_scores), locus_scores)
+  TAB_loci$type <- "Not associated"
+  TAB_loci$type[TAB_loci$names%in%outliers$Loci] <- "FDR"
+  TAB_loci$type[TAB_loci$names%in%top_outliers$Loci] <- "Bonferroni"
+  TAB_loci$type <- factor(TAB_loci$type, levels = c("Not associated", "FDR", "Bonferroni"))
+  TAB_var <- as.data.frame(scores(RDA_prec, choices=c(1,2), display="bp"))
+  loading_prec<-ggplot() +
+    geom_hline(yintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
+    geom_vline(xintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
+    geom_point(data = TAB_loci, aes(x=RDA1, y=RDA2, colour = type), size = 2.5) +
+    scale_color_manual(values = c("gray90", "#F9A242FF", "#6B4596FF")) +
+    geom_segment(data = TAB_var, aes(xend=RDA1, yend=RDA2, x=0, y=0), colour="black", size=0.15, linetype=1, arrow=arrow(length = unit(0.02, "npc"))) +
+    geom_label_repel(data = TAB_var, aes(x=1.1*RDA1, y=1.1*RDA2, label = row.names(TAB_var)), size = 2.8, family = "Times") +
+    xlab("RDA 1: 47.5%") + ylab("RDA 2: 27.6%") +
+    guides(color=guide_legend(title="Locus type")) +
+    theme_bw(base_size = 11, base_family = "Times") +
+    theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
+  loading_prec
+  jpeg(file = "/lustre/rocchettil/RDA_prec_biplot.jpeg")
+  plot(loading_prec)
+  dev.off()
+
+  write.table(qvalue, "Prec_GEA_WWE.csv", append = FALSE, quote = TRUE, sep = " ",
+              eol = "\n", na = "NA", dec = ".", row.names = FALSE,
+              col.names = TRUE, qmethod = c("escape", "double"),
+              fileEncoding = "")
+  
+  #plotting Mhanattan plot using the library qqman
+  
+  library(qqman)
+  Manhattan_prec <- read.csv(file = "Prec_GEA_WWE.csv", header=TRUE) #import the p value result for precipitation
+  jpeg(file = "/lustre/rocchettil/Manh_RDA_prec.jpeg")
+  manhattan(Manhattan_prec, col = c("blue", "gray60"),suggestiveline = -log10(0.0010843300), genomewideline = -log10(1.914289e-07))
+  dev.off()
+  
+  #P distribution
+  jpeg(file = "/lustre/rocchettil/Phist_Manh_RDA_prec.jpeg")
+  hist(Manhattan_prec$P)
+  dev.off()
+```
+![image](https://github.com/user-attachments/assets/d11b4e72-5c10-489f-b12b-2c7dc7ef6b1c)
+
+
 
