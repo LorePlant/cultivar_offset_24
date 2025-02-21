@@ -520,6 +520,6 @@ GEA for temperature variables resulted in 6213 SNPs  FDR and among them 172 high
   dev.off()
 ```
 ![image](https://github.com/user-attachments/assets/d11b4e72-5c10-489f-b12b-2c7dc7ef6b1c)
-
+GEA for precipitation variables resulted in 5501 SNPs FDR and among them 182 highly assoicciated Bonferroni correction
 
 
