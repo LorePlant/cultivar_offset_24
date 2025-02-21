@@ -343,5 +343,15 @@ names(Variables)[1]<- paste("geno")
 names(Variables)[2]<- paste("group")
 names(Variables)[3]<- paste("region")
 ```
+Check Variance Inflation Factor of selected environmental variable including bioclim and soil variable;
 
+```
+RDAgeo_env <- rda(genotype ~ bio2+bio10+bio11+	bio15	+ bio18 + bio19, Variables)
+
+sqrt(vif.cca(RDAgeo_env))
+```
+
+|  bio2    |   bio10   |   bio11  |  bio15  |   bio18  |   bio19  | N    |   pH  |    SOC  |     Wc |
+|---------|----------|---------|----------|-----------|----------|-------|-------|---------|--------|
+2.314209| 1.491136 |3.308390 |3.656316 |2.216436| 1.632229|3.402853 |1.710886 |4.158232| 2.253560|
 
