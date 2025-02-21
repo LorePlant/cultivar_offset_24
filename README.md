@@ -599,3 +599,12 @@ GEA for precipitation variables resulted in 5501 SNPs FDR and among them 182 hig
 ![image](https://github.com/user-attachments/assets/8c6d0dc2-0e05-4991-8b2c-fa4cfd69948b)
 GEA for soil variables resulted in 7916 SNPs FDR and among them 287 highly assoicciated Bonferroni correction
 
+## Enriched RDA
+To visualize the adaptive differentiation among genotypes, I conducted an additional Redundancy Analysis (RDA) using only the GEA SNPs for the three seperate analysis for temperature, precipitation and soil variables (FDR, q<0.05).
+```
+  geno_Wild_GEA<-geno155[which((rdadapt_temp$q.values<0.05)|(rdadapt_prec$q.values<0.05)|(rdadapt_soil$q.values<0.05))]
+  write.table(geno_Wild_GEA, "geno_Wild_GEA_WWE.txt") #save the new GEA genotype data
+```
+ A total of 13856 GEA QTLs where identified combining Temeprature, precipitation and soil variables (FDR q<0.05)
+
+
