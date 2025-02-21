@@ -355,3 +355,96 @@ sqrt(vif.cca(RDAgeo_env))
 |---------|----------|---------|----------|-----------|----------|-------|-------|---------|--------|
 2.264430 |1.849025| 2.164724| 5.224877| 3.740733 |2.981721|3.402853 |1.710886 |4.158232| 2.253560|
 
+
+## RDA for Genotype Environment Associations (GEA)
+
+Redundancy analysis can be used to identify GEA based on the Mhallanoise distance of SNPs in the RDA-biplot. Within the RDA model we can effectively correct for population structure  and geography (latitude and longitude) using them as covariates in the RDA model. As population structure correction we used latent factor derived from the LEA package.
+
+As first attempt I decided to run the anlysis seperate for temperature, precipitation and soil variables.
+
+>Temperature
+```
+## Use latent factor for covariable correction
+# latent factor temperature variable
+Y <- geno155
+sel_temp<- data.frame(Env%>% dplyr::select(bio2, bio10, bio11))
+write.env(sel_temp, "Temp_variable.env")
+X = read.table("Temp_variable.env")
+
+mod.lfmm2 <- lfmm2(input = Y, env = X, K = 4)
+str(mod.lfmm2)
+mod.lfmm2@U
+#Merge latent factor to Variable
+latent_temp<-data.frame(rownames(geno155), mod.lfmm2@U)
+Temp_Var<-cbind(Variables,latent_temp)
+
+#GEA Temperature
+RDA_temp <- rda(geno155 ~ bio2+bio10+bio11 +  Condition(X1 + X2 +X3 +X4), Temp_Var)
+summary(eigenvals(RDA_temp, model = "constrained"))
+library(robust)
+rdadapt<-function(rda,K)
+{
+  zscores<-rda$CCA$v[,1:as.numeric(K)]
+  resscale <- apply(zscores, 2, scale)
+  resmaha <- covRob(resscale, distance = TRUE, na.action= na.omit, estim="pairwiseGK")$dist
+  lambda <- median(resmaha)/qchisq(0.5,df=K)
+  reschi2test <- pchisq(resmaha/lambda,K,lower.tail=FALSE)
+  qval <- qvalue(reschi2test)
+  q.values_rdadapt<-qval$qvalues
+  return(data.frame(p.values=reschi2test, q.values=q.values_rdadapt))
+}
+
+rdadapt_temp<- rdadapt(RDA_temp, 2)
+## P-values threshold after Bonferroni correction
+thres_env <- 0.05/length(rdadapt_temp$p.values)
+## Identifying the loci that are below the p-value threshold
+top_outliers <- data.frame(Loci = colnames(geno155)[which(rdadapt_temp$p.values<thres_env)], p.value = rdadapt_temp$p.values[which(rdadapt_temp$p.values<thres_env)], contig = unlist(lapply(strsplit(colnames(geno155)[which(rdadapt_temp$p.values<thres_env)], split = "_"), function(x) x[1])))
+qvalue <- data.frame(Loci = colnames(geno155), p.value = rdadapt_temp$p.values, q.value = rdadapt_temp$q.value)
+outliers <- data.frame(Loci = colnames(geno155)[which(rdadapt_temp$q.values<0.05)], p.value = rdadapt_temp$p.values[which(rdadapt_temp$q.values<0.05)])
+
+
+#plot GEA temp
+
+locus_scores <- scores(RDA_temp, choices=c(1:2), display="species", scaling="sites")
+TAB_loci <- data.frame(names = row.names(locus_scores), locus_scores)
+TAB_loci$type <- "Not associated"
+TAB_loci$type[TAB_loci$names%in%outliers$Loci] <- "FDR"
+TAB_loci$type[TAB_loci$names%in%top_outliers$Loci] <- "Bonferroni"
+TAB_loci$type <- factor(TAB_loci$type, levels = c("Not associated", "FDR", "Bonferroni"))
+TAB_var <- as.data.frame(scores(RDA_temp, choices=c(1,2), display="bp"))
+loading_temp<-ggplot() +
+  geom_hline(yintercept=0, linetype="dashed", color = gray(.80), linewidth=0.6) +
+  geom_vline(xintercept=0, linetype="dashed", color = gray(.80), linewidth=0.6) +
+  geom_point(data = TAB_loci, aes(x=RDA1, y=RDA2, colour = type), size = 2.5) +
+  scale_color_manual(values = c("gray90", "#F9A242FF", "#6B4596FF")) +
+  geom_segment(data = TAB_var, aes(xend=1.1*RDA1, yend=1.1*RDA2, x=0, y=0), colour="black", size=0.15, linetype=1, arrow=arrow(length = unit(0.02, "npc"))) +
+  geom_label_repel(data = TAB_var, aes(x=1.1*RDA1, y=1.1*RDA2, label = row.names(TAB_var)), size = 3.8, family = "Times") +
+  xlab("RDA 1: 58.2%") + ylab("RDA 2: 21.6%") +
+  guides(color=guide_legend(title="Locus type")) +
+  theme_bw(base_size = 11, base_family = "Times") +
+  theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
+loading_temp
+jpeg(file = "/lustre/rocchettil/RDA_temp_biplot.jpeg")
+plot(loading_temp)
+dev.off()
+
+write.table(qvalue, "Temp_GEA_WWE.csv", append = FALSE, quote = TRUE, sep = " ",
+            eol = "\n", na = "NA", dec = ".", row.names = FALSE,
+            col.names = TRUE, qmethod = c("escape", "double"),
+            fileEncoding = "")
+
+Manhattan_temp <- read.csv(file = "Temp_GEA_WWE.csv", header=TRUE) #import the p value result for temperature
+manhattan(Manhattan_temp, col = c("darkred", "gray60"),suggestiveline = -log10(0.001224640), genomewideline = -log10(1.924104e-07))
+jpeg(file = "/lustre/rocchettil/Manh_RDA_temp.jpeg")
+manhattan(Manhattan_temp, col = c("darkred", "gray60"),suggestiveline = -log10(0.001224640), genomewideline = -log10(1.924104e-07))
+dev.off()
+
+#P distribution
+jpeg(file = "/lustre/rocchettil/Phist_Manh_RDA_temp")
+hist(Manhattan_temp$P)
+dev.off()
+
+hist(qvalue$p.value)
+```
+![image](https://github.com/user-attachments/assets/a32731fa-8f4a-4cc6-8596-318219723a26)
+
