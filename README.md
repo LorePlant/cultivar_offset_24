@@ -605,6 +605,39 @@ To visualize the adaptive differentiation among genotypes, I conducted an additi
   geno_Wild_GEA<-geno155[which((rdadapt_temp$q.values<0.05)|(rdadapt_prec$q.values<0.05)|(rdadapt_soil$q.values<0.05))]
   write.table(geno_Wild_GEA, "geno_Wild_GEA_WWE.txt") #save the new GEA genotype data
 ```
- A total of 13856 GEA QTLs where identified combining Temeprature, precipitation and soil variables (FDR q<0.05)
+ A total of 13856 GEA QTLs where identified combining Temeprature, precipitation and soil variables (FDR q<0.05). 
+This set of GEA QTL will be used as genomic information for running enriched RDA
+```
+ RDA_all_enriched<-rda(geno_Wild_GEA ~ bio2 + bio10 + bio11 + bio15	+ bio18 + bio19, Variables)
+  summary(eigenvals(RDA_all_enriched, model = "constrained"))
+plot(RDA_all_enriched)
+```
+We re-arrange the plot to highlight specific geographic region
+```
+TAB_gen <- data.frame(geno = row.names(scores(RDA_all_enriched , display = "sites")), scores(RDA_all_enriched, display = "sites"))
+
+Geno <- merge(TAB_gen, Variables[, 1:5] ,by="geno")
+TAB_var <- as.data.frame(scores(RDA_all_enriched, choices=c(1,2), display="bp"))
+loading_geno_all_enriched_region<-ggplot() +
+  geom_hline(yintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
+  geom_vline(xintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
+  geom_point(data = Geno, aes(x=RDA1, y=RDA2, fill = region), size = 2.5, shape = 21, color = "black", stroke = 0.8) +
+  scale_fill_manual(values = c("lightblue","darkgreen", "darkorange", "darkblue")) +
+  geom_segment(data = TAB_var, aes(xend=RDA1*5, yend=RDA2*5, x=0, y=0), colour="black", linewidth =0.15, linetype=1, arrow=arrow(length = unit(0.02, "npc"))) +
+  geom_label_repel(data = TAB_var, aes(x=5*RDA1, y=5*RDA2, label = row.names(TAB_var)), size = 3.2, family = "Times") +
+  xlab("RDA 1: 40.2%") + ylab("RDA 2: 32.2%") +
+  guides(color=guide_legend(title="Latitude gradient")) +
+  theme_bw(base_size = 11, base_family = "Times") +
+  theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
+loading_geno_all_enriched_region
+jpeg(file = "/lustre/rocchettil/RDA_all_geno_biplot_region.jpeg")
+plot(loading_geno_all_enriched_region)
+dev.off()
+```
+![image](https://github.com/user-attachments/assets/36cec944-f628-4ab7-9f2e-614458230edc)
+
+we can see a clear differentiation among west and east mediterrenean on the first axis driven by soil pH and bio10(summer temperature). On the second axis we see a differentiation among south and noth region, with the norther region in france with higher summer precipitation (bio18), Nitrogen content, organinc matter and soil water capacity.
+
+
 
 
