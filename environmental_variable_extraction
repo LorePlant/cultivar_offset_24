@@ -1,0 +1,73 @@
+
+library(raster)
+library("readxl")
+
+bio2<- raster(paste("D:/raster files/original chelsea raster/bio2_med.tif"))
+bio10<- raster(paste("D:/raster files/original chelsea raster/bio10_med.tif"))
+bio11<- raster(paste("D:/raster files/original chelsea raster/bio11_med.tif"))
+bio15<- raster(paste("D:/raster files/original chelsea raster/bio15_med.tif"))
+bio18<- raster(paste("D:/raster files/original chelsea raster/bio18_med.tif"))
+bio19<- raster(paste("D:/raster files/original chelsea raster/bio19_med.tif"))
+
+names(bio2) = 'bio2'
+names(bio10) = 'bio10'
+names(bio11) = 'bio11'
+names(bio15) = 'bio15'
+names(bio18) = 'bio18'
+names(bio19) = 'bio19'
+#stack the different raster file
+ras_current<-stack(c(bio2, bio10, bio11,  bio15, bio18, bio19))
+
+#spatial grid
+
+coord_r<-rasterToPoints(ras_current, spatial = TRUE)
+map_pts<-data.frame(x = coordinates(coord_r)[,1], y=coordinates(coord_r)[,2], coord_r@data)
+
+locations = read_excel("C:/Users/rocchetti/Desktop/Leccino24/417_geoloc_wild_EW.xlsx")
+
+Env <- data.frame(extract(ras_current, locations[,3:4]))
+write.table(Env, "C:/Users/rocchetti/Desktop/Leccino24/current_clim_417_med.txt")
+
+
+
+##### soil data
+
+install.packages('soilDB', dependencies = TRUE)
+library(soilDB)
+library(sf)        # For spatial data handling
+library(dplyr)
+library(readr)
+library(purrr)
+
+locations <- read_csv("locations155.csv")
+locations<-as.data.frame(locations)
+
+# Fetch soil data for all points
+soil_data <- fetchSoilGrids(locations,loc.names = c("ID", "latitude", "longitude"), verbose = TRUE)
+
+setwd("C:/Users/rocchetti/Desktop/Leccino24/Landscape_156WWE")
+
+write.table(soil_data@horizons, "soil_data.txt")
+
+
+#soil data 0-30
+
+soil_data_df<-as.data.frame(soil_data@horizons)
+soil_data_df_030<-soil_data_df%>% filter(label %in% c("0-5", "5-15", "15-30")) %>%
+  group_by(id) %>%  # Group by depth range
+  summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+
+#catch F7
+
+location_F7<- read.table("soilF7.txt", header = TRUE)
+soil_dataF7 <- fetchSoilGrids(location_F7,loc.names = c("ID", "latitude", "longitude"), verbose = TRUE)
+
+#soil data F7 0-30
+
+soil_data_df_F7<-as.data.frame(soil_dataF7@horizons)
+soil_data_F7_030<-soil_data_df_F7%>% filter(label %in% c("0-5", "5-15", "15-30")) %>%
+  group_by(id) %>%  # Group by depth range
+  summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+write.table(soil_data_F7_030, "soil_dataF7.txt")
