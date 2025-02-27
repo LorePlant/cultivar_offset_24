@@ -1,4 +1,3 @@
-![image](https://github.com/user-attachments/assets/9ee237c3-5b86-42f7-a0ed-af8a49204f30)![image](https://github.com/user-attachments/assets/c40694c4-1f03-4b25-87a5-5367b78f4b51)# Landscape Olea europea
 
 This page is created to track progresses on my postdoctoral research in landscape genomics in a wester Mediterrenean Olive population.
 The population is composed by 359 individuals along a 15° latitude gradient from 30 to 45.
