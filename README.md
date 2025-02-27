@@ -1,4 +1,4 @@
-# Landscape Olea europea
+![image](https://github.com/user-attachments/assets/9ee237c3-5b86-42f7-a0ed-af8a49204f30)![image](https://github.com/user-attachments/assets/c40694c4-1f03-4b25-87a5-5367b78f4b51)# Landscape Olea europea
 
 This page is created to track progresses on my postdoctoral research in landscape genomics in a wester Mediterrenean Olive population.
 The population is composed by 359 individuals along a 15° latitude gradient from 30 to 45.
@@ -639,5 +639,22 @@ dev.off()
 we can see a clear differentiation among west and east mediterrenean on the first axis driven by soil pH and bio10(summer temperature). On the second axis we see a differentiation among south and noth region, with the norther region in france with higher summer precipitation (bio18), Nitrogen content, organinc matter and soil water capacity.
 
 
+
+
+
+
+|  label   |   id   |   nitrogen  |
+|---------|----------|---------|
+0-5 |A| 2.94| 
+5-15 |A| 1.64| 
+0-5 |B| 3| 
+5-15 |B| 1.77| 
+
+
+
+|   id   |   nitrogen_label_05 |nitrogen_label_5-15 |
+|----------|---------|--------|
+|A| 2.94| 1.64|
+|B| 3| 1.77|
 
 
