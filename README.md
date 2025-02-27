@@ -641,20 +641,3 @@ we can see a clear differentiation among west and east mediterrenean on the firs
 
 
 
-
-
-|  label   |   id   |   nitrogen  |
-|---------|----------|---------|
-0-5 |A| 2.94| 
-5-15 |A| 1.64| 
-0-5 |B| 3| 
-5-15 |B| 1.77| 
-
-
-
-|   id   |   nitrogen_label_05 |nitrogen_label_5-15 |
-|----------|---------|--------|
-|A| 2.94| 1.64|
-|B| 3| 1.77|
-
-
