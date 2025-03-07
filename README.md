@@ -606,19 +606,25 @@ GEA for soil variables resulted in 6271 SNPs FDR and among them 194 highly assoi
 
 ## Enriched RDA
 To visualize the adaptive differentiation among genotypes, I conducted an additional Redundancy Analysis (RDA) using only the GEA SNPs for the three seperate analysis for temperature, precipitation and soil variables (FDR, q<0.05).
+By using the same GEA QTLs, we are going to represent first the RDA biplot with all genotypes including Wild from East and West mediterrenean, than RDA adaptive landscape in west mediterrenean only. This last plot will represent the adaptive landscape in the West mediterrenean that includes potential genetic adaptation derived from easter germplasm
 ```
+ ## A total of 12143 GEA QTL have been identified and used for RDA
+  
   geno_Wild_GEA<-geno155[which((rdadapt_temp$q.values<0.05)|(rdadapt_prec$q.values<0.05)|(rdadapt_soil$q.values<0.05))]
   write.table(geno_Wild_GEA, "geno_Wild_GEA_WWE.txt") #save the new GEA genotype data
-```
- A total of 12143 GEA QTLs where identified combining Temeprature, precipitation and soil variables (FDR q<0.05). 
-This set of GEA QTL will be used as genomic information for running enriched RDA
-```
- RRDA_all_enriched<-rda(geno_Wild_GEA ~ bio2 + bio10 + bio11 + bio15	+ bio18 + bio19 + N + pH + clay + sand, Variables)
+  geno_Wild_GEA<-read.table("geno_Wild_GEA_WWE.txt")
+  
+  
+
+  
+  RDA_all_enriched<-rda(geno_Wild_GEA ~ bio2 + bio10 + bio11 + bio15	+ bio18 + bio19 + N + pH + clay + sand, Variables)
   summary(eigenvals(RDA_all_enriched, model = "constrained"))
 plot(RDA_all_enriched)
-```
-We re-arrange the plot to highlight specific geographic region
-```
+sqrt(vif.cca(RDA_all_enriched))
+
+# plot Geographic regions
+
+
 TAB_gen <- data.frame(geno = row.names(scores(RDA_all_enriched , display = "sites")), scores(RDA_all_enriched, display = "sites"))
 
 Geno <- merge(TAB_gen, Variables[, 1:5] ,by="geno")
@@ -638,10 +644,40 @@ loading_geno_all_enriched_region
 jpeg(file = "/lustre/rocchettil/RDA_all_geno_biplot_region.jpeg")
 plot(loading_geno_all_enriched_region)
 dev.off()
-```
-![image](https://github.com/user-attachments/assets/b2774e31-890b-4a20-83d3-37c36a10a39b)
 
-we can see a clear differentiation among west and east mediterrenean on the first axis driven by soil pH and bio10(summer temperature). On the second axis we see a differentiation among south and north regions of the west mediterrenean, with the norther region in france with higher summer precipitation (bio18)and Nitrogen content opposite to the souther regions (Morocco and Spain) with higher winter temperature and clay.
+### RDA plot based on GEA considering only West Mediterrenean
+#filter west med individuals
+
+list142WW<-read.table("list142WW.txt")
+geno_wild_GEA_142WW<- geno_Wild_GEA[rownames(geno_Wild_GEA)%in% list142WW$V1, ]
+Variables_142WW<- Variables[Variables$geno%in% list142WW$V1, ]
+RDA_142WW_enriched<-rda(geno_wild_GEA_142WW ~ bio2 + bio10 + bio11 + bio15	+ bio18 + bio19 + N + pH + clay + sand, Variables_142WW)
+summary(eigenvals(RDA_142WW_enriched, model = "constrained"))
+
+TAB_gen <- data.frame(geno = row.names(scores(RDA_142WW_enriched , display = "sites")), scores(RDA_142WW_enriched, display = "sites"))
+
+Geno <- merge(TAB_gen, Variables[, 1:5] ,by="geno")
+TAB_var <- as.data.frame(scores(RDA_142WW_enriched, choices=c(1,2), display="bp"))
+loading_geno_142W_enriched_region<-ggplot() +
+  geom_hline(yintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
+  geom_vline(xintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
+  geom_point(data = Geno, aes(x=RDA1, y=RDA2, fill = region), size = 2.5, shape = 21, color = "black", stroke = 0.8) +
+  scale_fill_manual(values = c("lightblue","darkgreen", "darkorange")) +
+  geom_segment(data = TAB_var, aes(xend=RDA1*5, yend=RDA2*5, x=0, y=0), colour="black", linewidth =0.15, linetype=1, arrow=arrow(length = unit(0.02, "npc"))) +
+  geom_label_repel(data = TAB_var, aes(x=5*RDA1, y=5*RDA2, label = row.names(TAB_var)), size = 3.2, family = "Times") +
+  xlab("RDA 1: 41.1%") + ylab("RDA 2: 16.6%") +
+  guides(color=guide_legend(title="Latitude gradient")) +
+  theme_bw(base_size = 11, base_family = "Times") +
+  theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
+loading_geno_142W_enriched_region
+
+ggarrange(loading_geno_all_enriched_region, loading_geno_142W_enriched_region, nrow=1,ncol=2)
+```
+![image](https://github.com/user-attachments/assets/933ca0b6-e16d-41ac-849a-2baebea0b216)
+
+In the first plot, we can see a clear differentiation among west and east mediterrenean on the first axis driven by soil pH and bio10(summer temperature). On the second axis we see a differentiation among south and north regions of the west mediterrenean, with the norther region in france with higher summer precipitation (bio18)and Nitrogen content opposite to the souther regions (Morocco and Spain) with higher winter temperature and clay.
+
+In the second plotwe can see a clear diffentiation between two different landscpae in Morocco potentially highlight the difference betwen continental and costal Morocco. 
 
 
 
