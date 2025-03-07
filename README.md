@@ -639,7 +639,7 @@ jpeg(file = "/lustre/rocchettil/RDA_all_geno_biplot_region.jpeg")
 plot(loading_geno_all_enriched_region)
 dev.off()
 ```
-![image](https://github.com/user-attachments/assets/df5e1d22-b4b6-4154-ace9-f6318ae0d768)
+![image](https://github.com/user-attachments/assets/b2774e31-890b-4a20-83d3-37c36a10a39b)
 
 we can see a clear differentiation among west and east mediterrenean on the first axis driven by soil pH and bio10(summer temperature). On the second axis we see a differentiation among south and north regions of the west mediterrenean, with the norther region in france with higher summer precipitation (bio18)and Nitrogen content opposite to the souther regions (Morocco and Spain) with higher winter temperature and clay.
 
