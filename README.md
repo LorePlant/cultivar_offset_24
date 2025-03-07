@@ -326,7 +326,7 @@ geno155_data<- write.table(geno155, "geno_155.txt")
 
 #standardize bioclim variable
 data_wild<- read.csv("Env_155_WWE.csv", header = TRUE)
-test_env <- data_wild%>% select(long, lat, bio2, bio10, bio11, bio15, bio18, bio19)
+test_env <- data_wild%>% select(long, lat, bio2, bio10, bio11, bio15, bio18, bio19, clay, N, pH, sand)
 Env <- scale(test_env, center=TRUE, scale=TRUE)
 # Extract the centering values
 env_center <- attr(Env, "scaled:center") #mean of each variable
@@ -345,14 +345,13 @@ names(Variables)[3]<- paste("region")
 Check Variance Inflation Factor of selected environmental variable including bioclim and soil variable;
 
 ```
-RDAgeo_env <- rda(genotype ~ bio2+bio10+bio11+	bio15	+ bio18 + bio19, Variables)
-
+RDAgeo_env <- rda(geno155 ~ bio2+bio10+bio11+	bio15	+ bio18 + bio19 + clay+ N+ pH+ sand , Variables)
 sqrt(vif.cca(RDAgeo_env))
 ```
 
-|  bio2    |   bio10   |   bio11  |  bio15  |   bio18  |   bio19  | N    |   pH  |    SOC  |     Wc |
+|  bio2    |   bio10   |   bio11  |  bio15  |   bio18  |   bio19  |clay    |   N  |    pH  |     sand |
 |---------|----------|---------|----------|-----------|----------|-------|-------|---------|--------|
-2.264430 |1.849025| 2.164724| 5.224877| 3.740733 |2.981721|3.402853 |1.710886 |4.158232| 2.253560|
+1.648260 |2.132844| 2.717164| 3.642094| 2.693061 |2.360481|3.067049 |2.399268 |1.567922| 2.776405|
 
 
 ## RDA for Genotype Environment Associations (GEA)
@@ -363,14 +362,12 @@ As first attempt I decided to run the anlysis seperate for temperature, precipit
 
 >Temperature
 ```
-## Use latent factor for covariable correction
-# latent factor temperature variable
 Y <- geno155
 sel_temp<- data.frame(Env%>% dplyr::select(bio2, bio10, bio11))
 write.env(sel_temp, "Temp_variable.env")
 X = read.table("Temp_variable.env")
 
-mod.lfmm2 <- lfmm2(input = Y, env = X, K = 4)
+mod.lfmm2 <- lfmm2(input = Y, env = X, K = 3)
 str(mod.lfmm2)
 mod.lfmm2@U
 #Merge latent factor to Variable
@@ -378,7 +375,7 @@ latent_temp<-data.frame(rownames(geno155), mod.lfmm2@U)
 Temp_Var<-cbind(Variables,latent_temp)
 
 #GEA Temperature
-RDA_temp <- rda(geno155 ~ bio2+bio10+bio11 +  Condition(X1 + X2 +X3 +X4), Temp_Var)
+RDA_temp <- rda(geno155 ~ bio2+bio10+bio11 +  Condition(X1 + X2 +X3), Temp_Var)
 summary(eigenvals(RDA_temp, model = "constrained"))
 library(robust)
 rdadapt<-function(rda,K)
@@ -418,7 +415,7 @@ loading_temp<-ggplot() +
   scale_color_manual(values = c("gray90", "#F9A242FF", "#6B4596FF")) +
   geom_segment(data = TAB_var, aes(xend=1.1*RDA1, yend=1.1*RDA2, x=0, y=0), colour="black", size=0.15, linetype=1, arrow=arrow(length = unit(0.02, "npc"))) +
   geom_label_repel(data = TAB_var, aes(x=1.1*RDA1, y=1.1*RDA2, label = row.names(TAB_var)), size = 3.8, family = "Times") +
-  xlab("RDA 1: 58.2%") + ylab("RDA 2: 21.6%") +
+  xlab("RDA 1: 57.8%") + ylab("RDA 2: 21.6%") +
   guides(color=guide_legend(title="Locus type")) +
   theme_bw(base_size = 11, base_family = "Times") +
   theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
@@ -427,15 +424,15 @@ jpeg(file = "/lustre/rocchettil/RDA_temp_biplot.jpeg")
 plot(loading_temp)
 dev.off()
 
-write.table(qvalue, "Temp_GEA_WWE.csv", append = FALSE, quote = TRUE, sep = " ",
+write.table(qvalue, "Temp_GEA_WWE_3.csv", append = FALSE, quote = TRUE, sep = " ",
             eol = "\n", na = "NA", dec = ".", row.names = FALSE,
             col.names = TRUE, qmethod = c("escape", "double"),
             fileEncoding = "")
 
-Manhattan_temp <- read.csv(file = "Temp_GEA_WWE.csv", header=TRUE) #import the p value result for temperature
-manhattan(Manhattan_temp, col = c("darkred", "gray60"),suggestiveline = -log10(0.001224640), genomewideline = -log10(1.924104e-07))
+Manhattan_temp <- read.csv(file = "Temp_GEA_WWE_3.csv", header=TRUE) #import the p value result for temperature
+manhattan(Manhattan_temp, col = c("darkred", "gray60"),suggestiveline = -log10(0.001158020), genomewideline = -log10(1.924104e-07))
 jpeg(file = "/lustre/rocchettil/Manh_RDA_temp.jpeg")
-manhattan(Manhattan_temp, col = c("darkred", "gray60"),suggestiveline = -log10(0.001224640), genomewideline = -log10(1.924104e-07))
+manhattan(Manhattan_temp, col = c("darkred", "gray60"),suggestiveline = -log10(0.001158020), genomewideline = -log10(1.924104e-07))
 dev.off()
 
 #P distribution
@@ -445,8 +442,9 @@ dev.off()
 
 hist(qvalue$p.value)
 ```
-![image](https://github.com/user-attachments/assets/a32731fa-8f4a-4cc6-8596-318219723a26)
-GEA for temperature variables resulted in 6213 SNPs  FDR and among them 172 highly assoicciated Bonferroni correction
+![image](https://github.com/user-attachments/assets/19591930-86d0-49a3-8cbf-3c7c78631c31)
+
+GEA for temperature variables resulted in 5877 SNPs  FDR and among them 167 highly assoicciated Bonferroni correction
 
 >Precipitation
   ```
@@ -456,15 +454,17 @@ GEA for temperature variables resulted in 6213 SNPs  FDR and among them 172 high
   sel_prec<- data.frame(Env%>% select(bio15, bio18, bio19))
   write.env(sel_prec, "prec_variable.env")
   X = read.table("prec_variable.env")
-  mod.lfmm2 <- lfmm2(input = Y, env = X, K = 4)
+  mod.lfmm2 <- lfmm2(input = Y, env = X, K = 3)
   str(mod.lfmm2)
   mod.lfmm2@U
   #Merge latent factor to Variable
   latent_prec<-data.frame(rownames(geno155), mod.lfmm2@U)
   Prec_Var<-cbind(Variables,latent_prec)
   
+  
+  
   ## GEA Precipitation
-  RDA_prec <- rda(geno155 ~ 	bio15	+ bio18 + bio19 +  Condition(X1 + X2 + X3 + X4 ), Prec_Var)
+  RDA_prec <- rda(geno155 ~ 	bio15	+ bio18 + bio19 +  Condition(X1 + X2 + X3 ), Prec_Var)
   summary(eigenvals(RDA_prec, model = "constrained"))
   
   rdadapt_prec<- rdadapt(RDA_prec, 2)
@@ -477,6 +477,7 @@ GEA for temperature variables resulted in 6213 SNPs  FDR and among them 172 high
   outliers <- data.frame(Loci = colnames(geno155)[which(rdadapt_prec$q.values<0.05)], p.value = rdadapt_prec$p.values[which(rdadapt_prec$q.values<0.05)])
   
   #plot GEA precipitation
+  
   locus_scores <- scores(RDA_prec, choices=c(1:2), display="species", scaling="sites")
   TAB_loci <- data.frame(names = row.names(locus_scores), locus_scores)
   TAB_loci$type <- "Not associated"
@@ -491,7 +492,7 @@ GEA for temperature variables resulted in 6213 SNPs  FDR and among them 172 high
     scale_color_manual(values = c("gray90", "#F9A242FF", "#6B4596FF")) +
     geom_segment(data = TAB_var, aes(xend=RDA1, yend=RDA2, x=0, y=0), colour="black", size=0.15, linetype=1, arrow=arrow(length = unit(0.02, "npc"))) +
     geom_label_repel(data = TAB_var, aes(x=1.1*RDA1, y=1.1*RDA2, label = row.names(TAB_var)), size = 2.8, family = "Times") +
-    xlab("RDA 1: 47.5%") + ylab("RDA 2: 27.6%") +
+    xlab("RDA 1: 48.5%") + ylab("RDA 2: 27.0%") +
     guides(color=guide_legend(title="Locus type")) +
     theme_bw(base_size = 11, base_family = "Times") +
     theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
@@ -499,8 +500,9 @@ GEA for temperature variables resulted in 6213 SNPs  FDR and among them 172 high
   jpeg(file = "/lustre/rocchettil/RDA_prec_biplot.jpeg")
   plot(loading_prec)
   dev.off()
-
-  write.table(qvalue, "Prec_GEA_WWE.csv", append = FALSE, quote = TRUE, sep = " ",
+  
+  
+  write.table(qvalue, "Prec_GEA_WWE_3.csv", append = FALSE, quote = TRUE, sep = " ",
               eol = "\n", na = "NA", dec = ".", row.names = FALSE,
               col.names = TRUE, qmethod = c("escape", "double"),
               fileEncoding = "")
@@ -508,28 +510,30 @@ GEA for temperature variables resulted in 6213 SNPs  FDR and among them 172 high
   #plotting Mhanattan plot using the library qqman
   
   library(qqman)
-  Manhattan_prec <- read.csv(file = "Prec_GEA_WWE.csv", header=TRUE) #import the p value result for precipitation
+  Manhattan_prec <- read.csv(file = "Prec_GEA_WWE_3.csv", header=TRUE) #import the p value result for precipitation
   jpeg(file = "/lustre/rocchettil/Manh_RDA_prec.jpeg")
-  manhattan(Manhattan_prec, col = c("blue", "gray60"),suggestiveline = -log10(0.0010843300), genomewideline = -log10(1.914289e-07))
+  manhattan(Manhattan_prec, col = c("blue", "gray60"),suggestiveline = -log10(0.0010233235), genomewideline = -log10(1.914289e-07))
   dev.off()
   
   #P distribution
   jpeg(file = "/lustre/rocchettil/Phist_Manh_RDA_prec.jpeg")
   hist(Manhattan_prec$P)
   dev.off()
+
 ```
-![image](https://github.com/user-attachments/assets/d11b4e72-5c10-489f-b12b-2c7dc7ef6b1c)
-GEA for precipitation variables resulted in 5501 SNPs FDR and among them 182 highly assoicciated Bonferroni correction
+![image](https://github.com/user-attachments/assets/e640a7ff-548e-420e-a08b-d535950dff33)
+
+GEA for precipitation variables resulted in 5191 SNPs FDR and among them 177 highly assoicciated Bonferroni correction
 
 >Soil
 ```
   #latent factor precipitation variable
   
   Y <- geno155
-  sel_soil<- data.frame(Env%>% select(N,pH,SOC,Wc))
+  sel_soil<- data.frame(Env%>% select(clay, N, pH, sand))
   write.env(sel_soil, "soil_variable.env")
   X = read.table("soil_variable.env")
-  mod.lfmm2 <- lfmm2(input = Y, env = X, K = 4)
+  mod.lfmm2 <- lfmm2(input = Y, env = X, K = 3)
   str(mod.lfmm2)
   mod.lfmm2@U
   #Merge latent factor to Variable
@@ -538,8 +542,8 @@ GEA for precipitation variables resulted in 5501 SNPs FDR and among them 182 hig
   
   
   
-  ## GEA Precipitation
-  RDA_soil <- rda(geno155 ~ 	N +pH + SOC + Wc +  Condition(X1 + X2 + X3 + X4 ), soil_Var)
+  ## GEA Soil
+  RDA_soil <- rda(geno155 ~ 	clay+ N+ pH+ sand+ Condition(X1 + X2 + X3 ), soil_Var)
   summary(eigenvals(RDA_soil, model = "constrained"))
   
   rdadapt_soil<- rdadapt(RDA_soil, 2)
@@ -551,7 +555,7 @@ GEA for precipitation variables resulted in 5501 SNPs FDR and among them 182 hig
   qvalue <- data.frame(Loci = colnames(geno155), p.value = rdadapt_soil$p.values, q.value = rdadapt_soil$q.value)
   outliers <- data.frame(Loci = colnames(geno155)[which(rdadapt_soil$q.values<0.05)], p.value = rdadapt_soil$p.values[which(rdadapt_soil$q.values<0.05)])
   
-  #plot GEA precipitation
+  #plot GEA soil
   
   locus_scores <- scores(RDA_soil, choices=c(1:2), display="species", scaling="sites")
   TAB_loci <- data.frame(names = row.names(locus_scores), locus_scores)
@@ -567,7 +571,7 @@ GEA for precipitation variables resulted in 5501 SNPs FDR and among them 182 hig
     scale_color_manual(values = c("gray90", "#F9A242FF", "#6B4596FF")) +
     geom_segment(data = TAB_var, aes(xend=RDA1, yend=RDA2, x=0, y=0), colour="black", size=0.15, linetype=1, arrow=arrow(length = unit(0.02, "npc"))) +
     geom_label_repel(data = TAB_var, aes(x=1.1*RDA1, y=1.1*RDA2, label = row.names(TAB_var)), size = 3.8, family = "Times") +
-    xlab("RDA 1: 40.0%") + ylab("RDA 2: 26.8%") +
+    xlab("RDA 1: 39.1%") + ylab("RDA 2: 24.2%") +
     guides(color=guide_legend(title="Locus type")) +
     theme_bw(base_size = 11, base_family = "Times") +
     theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
@@ -577,7 +581,7 @@ GEA for precipitation variables resulted in 5501 SNPs FDR and among them 182 hig
   dev.off()
   
   
-  write.table(qvalue, "Soil_GEA_WWE.csv", append = FALSE, quote = TRUE, sep = " ",
+  write.table(qvalue, "Soil_GEA_WWE_3.csv", append = FALSE, quote = TRUE, sep = " ",
               eol = "\n", na = "NA", dec = ".", row.names = FALSE,
               col.names = TRUE, qmethod = c("escape", "double"),
               fileEncoding = "")
@@ -585,18 +589,20 @@ GEA for precipitation variables resulted in 5501 SNPs FDR and among them 182 hig
   #plotting Mhanattan plot using the library qqman
   
   library(qqman)
-  Manhattan_soil <- read.csv(file = "Soil_GEA_WWE.csv", header=TRUE) #import the p value result for precipitation
+  Manhattan_soil <- read.csv(file = "Soil_GEA_WWE_3.csv", header=TRUE) #import the p value result for precipitation
   jpeg(file = "/lustre/rocchettil/Manh_RDA_prec.jpeg")
-  manhattan(Manhattan_soil, col = c("#ab7e4c", "gray60"),suggestiveline = -log10(0.001560509), genomewideline = -log10(1.961360e-07))
+  manhattan(Manhattan_soil, col = c("#ab7e4c", "gray60"),suggestiveline = -log10(0.001236238), genomewideline = -log10(1.961360e-07))
   dev.off()
   
   #P distribution
   jpeg(file = "/lustre/rocchettil/Phist_Manh_RDA_prec.jpeg")
   hist(Manhattan_soil$P)
   dev.off()
+
 ```
-![image](https://github.com/user-attachments/assets/8c6d0dc2-0e05-4991-8b2c-fa4cfd69948b)
-GEA for soil variables resulted in 7916 SNPs FDR and among them 287 highly assoicciated Bonferroni correction
+![image](https://github.com/user-attachments/assets/dc0d5d59-148a-4b39-9fa1-ba1076835bff)
+
+GEA for soil variables resulted in 6271 SNPs FDR and among them 194 highly assoicciated Bonferroni correction
 
 ## Enriched RDA
 To visualize the adaptive differentiation among genotypes, I conducted an additional Redundancy Analysis (RDA) using only the GEA SNPs for the three seperate analysis for temperature, precipitation and soil variables (FDR, q<0.05).
@@ -604,10 +610,10 @@ To visualize the adaptive differentiation among genotypes, I conducted an additi
   geno_Wild_GEA<-geno155[which((rdadapt_temp$q.values<0.05)|(rdadapt_prec$q.values<0.05)|(rdadapt_soil$q.values<0.05))]
   write.table(geno_Wild_GEA, "geno_Wild_GEA_WWE.txt") #save the new GEA genotype data
 ```
- A total of 13856 GEA QTLs where identified combining Temeprature, precipitation and soil variables (FDR q<0.05). 
+ A total of 12143 GEA QTLs where identified combining Temeprature, precipitation and soil variables (FDR q<0.05). 
 This set of GEA QTL will be used as genomic information for running enriched RDA
 ```
- RDA_all_enriched<-rda(geno_Wild_GEA ~ bio2 + bio10 + bio11 + bio15	+ bio18 + bio19, Variables)
+ RRDA_all_enriched<-rda(geno_Wild_GEA ~ bio2 + bio10 + bio11 + bio15	+ bio18 + bio19 + N + pH + clay + sand, Variables)
   summary(eigenvals(RDA_all_enriched, model = "constrained"))
 plot(RDA_all_enriched)
 ```
@@ -633,9 +639,11 @@ jpeg(file = "/lustre/rocchettil/RDA_all_geno_biplot_region.jpeg")
 plot(loading_geno_all_enriched_region)
 dev.off()
 ```
-![image](https://github.com/user-attachments/assets/36cec944-f628-4ab7-9f2e-614458230edc)
+![image](https://github.com/user-attachments/assets/df5e1d22-b4b6-4154-ace9-f6318ae0d768)
 
-we can see a clear differentiation among west and east mediterrenean on the first axis driven by soil pH and bio10(summer temperature). On the second axis we see a differentiation among south and noth region, with the norther region in france with higher summer precipitation (bio18), Nitrogen content, organinc matter and soil water capacity.
+we can see a clear differentiation among west and east mediterrenean on the first axis driven by soil pH and bio10(summer temperature). On the second axis we see a differentiation among south and north regions of the west mediterrenean, with the norther region in france with higher summer precipitation (bio18)and Nitrogen content opposite to the souther regions (Morocco and Spain) with higher winter temperature and clay.
+
+
 
 
 
