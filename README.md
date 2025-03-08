@@ -677,10 +677,148 @@ ggarrange(loading_geno_all_enriched_region, loading_geno_142W_enriched_region, n
 
 In the first plot, we can see a clear differentiation among west and east mediterrenean on the first axis driven by soil pH and bio10(summer temperature). On the second axis we see a differentiation among south and north regions of the west mediterrenean, with the norther region in france with higher summer precipitation (bio18)and Nitrogen content opposite to the souther regions (Morocco and Spain) with higher winter temperature and clay.
 
-In the second plotwe can see a clear diffentiation between two different landscpae in Morocco potentially highlight the difference betwen continental and costal Morocco. 
+In the second plot we can see a clear diffentiation between two different landscpae in Morocco potentially highlight the difference betwen continental and costal Morocco. 
+
+## Adaptive landscape projection
+By levaraging the enriched RDA model (RDA_142WW_enriched) we can estimate the adaptive value of each pixel within the olive niche.
+First lets upload raaster files previously cut using the ENM mask in QGIS
+```
+library(raster)
+library("readxl")
 
 
+bio2<- raster(paste("D:/raster files/Current_ENM_clipped_biova/bio2_current_masked.tif"))
+bio10<- raster(paste("D:/raster files/Current_ENM_clipped_biova/bio10_current_masked.tif"))
+bio11<- raster(paste("D:/raster files/Current_ENM_clipped_biova/bio11_current_masked.tif"))
+bio15<- raster(paste("D:/raster files/Current_ENM_clipped_biova/bio15_current_masked.tif"))
+bio18<- raster(paste("D:/raster files/Current_ENM_clipped_biova/bio18_current_masked.tif"))
+bio19<- raster(paste("D:/raster files/Current_ENM_clipped_biova/bio19_current_masked.tif"))
+soilN<- raster(paste("D:/raster files/Current_ENM_clipped_biova/resampled_soilN.tif"))
+soilpH<- raster(paste("D:/raster files/Current_ENM_clipped_biova/resampled_soilpH.tif"))
+
+soilclay<- raster(paste("D:/raster files/Current_ENM_clipped_biova/resampled_soilclay.tif"))
+soilsand<- raster(paste("D:/raster files/Current_ENM_clipped_biova/resampled_soilsand.tif"))
+
+names(bio2) = 'bio2'
+names(bio10) = 'bio10'
+names(bio11) = 'bio11'
+names(bio15) = 'bio15'
+names(bio18) = 'bio18'
+names(bio19) = 'bio19'
+names(soilN ) = 'N'
+names(soilpH) = 'pH'
+names(soilclay) = 'clay'
+names(soilsand) = 'sand'
 
 
+#alignment of soil rasters with bioclimatic variables
 
+soilN <- resample(soilN, bio2, method="bilinear")
+writeRaster(soilN, "resampled_soilN.tif", format="GTiff", overwrite=TRUE)
 
+soilpH<- resample(soilpH, bio2, method="bilinear")
+writeRaster(soilpH, "D:/raster files/Current_ENM_clipped_biova/resampled_soilpH.tif", format="GTiff", overwrite=TRUE)
+
+soilclay <- resample(soilclay, bio2, method="bilinear")
+writeRaster(soilclay, "D:/raster files/Current_ENM_clipped_biova/resampled_soilclay.tif", format="GTiff", overwrite=TRUE)
+
+soilsand <- resample(soilsand, bio2, method="bilinear")
+writeRaster(soilclay, "D:/raster files/Current_ENM_clipped_biova/resampled_soilsand.tif", format="GTiff", overwrite=TRUE)
+
+#stack the different raster file
+ras_current_var<-stack(c(bio2,bio10, bio11, bio15, bio18, bio19, soilclay,soilN,soilpH, soilsand))
+plot(ras_current_var, 
+     xlim = c(-10, 12), 
+     ylim = c(27, 50))
+```
+>in this specific code chunk we can find the function _resample_ that I used to allign soil rasters with the bioclim raster
+
+Transform the stacked raster in table and use the previous environmental scaling factor to scale the pixel table.
+NB: clay, pH; N and sand were adjusted according to the previous RDA model
+```
+pixel <- as.data.frame(rasterToPoints(ras_current_var[[row.names(RDA_142WW_enriched$CCA$biplot)]]))
+pixel <- data.frame(x=pixel$x, y=pixel$y, bio2=pixel$bio2,bio10=pixel$bio10,bio11=pixel$bio11,bio15=pixel$bio15,bio18=pixel$bio18,bio19=pixel$bio19,clay=pixel$clay/10,N=pixel$N/100,pH=pixel$pH/10,sand=pixel$sand/10)
+pixel<-na.omit(pixel)
+pixel<- pixel[pixel$x>-10, ]
+pixel_env<- pixel%>% dplyr::select(bio2, bio10, bio11, bio15, bio18, bio19,clay, N, pH, sand)
+
+scaled_pixel <- scale(pixel_env, center = env_center, scale = env_scale)
+scaled_pixel<-as.data.frame(scaled_pixel)
+```
+Use the RDA model (_RDA_142WW_enriched_) to predict pixel adaptive value (location within the RDA space)
+
+```
+
+#prediction of pixel in the RDA space
+scaled_pixel_LC <- predict(RDA_142WW_enriched, newdata=ENV, type="lc",scaling = "sites")
+TAB_pixel_LC<- data.frame(lat = pixel$y, long = pixel$x, scaled_pixel_LC[,1:3])
+TAB_var <- as.data.frame(scores(RDA_142WW_enriched, choices=c(1,2), display="bp"))
+```
+Plot the biplot and the geographic projection
+
+```
+# Extract RDA values
+a1 <- TAB_pixel_LC$RDA1
+a2 <- TAB_pixel_LC$RDA2
+
+# Compute the distance from the origin
+distance <- sqrt(a1^2 + a2^2)
+
+# Assign colors based on quadrants and the 5th sector (circle radius < 0.5)
+TAB_pixel_LC$color <- ifelse(distance < 0.5, "#717171",  # 5th sector - Purple
+                             ifelse(a1 > 0 & a2 > 0, "#E41A1C",  # Quadrant 1 - Red
+                                    ifelse(a1 < 0 & a2 > 0, "#377EB8",  # Quadrant 2 - Blue
+                                           ifelse(a1 < 0 & a2 < 0, "#4DAF4A",  # Quadrant 3 - Green
+                                                  "#FF7F00"))))  # Quadrant 4 - Orange
+
+# Update ggplot with quadrant-based colors and 5th sector
+pp <- ggplot() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
+  geom_point(data = TAB_pixel_LC, aes(x = RDA1, y = RDA2, color = color), size = 2) +  # Use sector colors
+  geom_segment(data = TAB_var, aes(xend = RDA1*3, yend = RDA2*3, x = 0, y = 0), 
+               colour = "black", size = 0.15, linetype = 1, 
+               arrow = arrow(length = unit(0.20, "cm"), type = "closed")) +
+  geom_label_repel(data = TAB_var, aes(x = RDA1*3, y = RDA2*3, label = row.names(TAB_var)), 
+                   size = 4, family = "Times") +
+  xlab("RDA 1: 41.1%") + 
+  ylab("RDA 2: 16.6%") +
+  theme_bw(base_size = 9, base_family = "Times") +
+  theme(panel.background = element_blank(), 
+        legend.background = element_blank(), 
+        panel.grid = element_blank(), 
+        plot.background = element_blank(), 
+        legend.text = element_text(size = rel(0.8)), 
+        strip.text = element_text(size = 9)) +
+  scale_color_identity()  # Use predefined colors directly
+
+pp
+## plot in geographic map
+
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+# Load geographic boundaries of France, Spain, Morocco, Portugal, and Algeria
+countries <- ne_countries(scale = "medium", country = c("France", "Spain", "Morocco", "Portugal", "Algeria"), returnclass = "sf")
+
+# Remove French Guiana and Atlantic French territories
+countries <- countries[!(countries$geounit %in% c("French Guiana", "Guadeloupe", "Martinique", "Saint Pierre and Miquelon", 
+                                                  "Reunion", "Mayotte", "New Caledonia", "French Polynesia", 
+                                                  "Wallis and Futuna", "Saint Barthelemy", "Saint Martin")), ]
+
+# Convert TAB_pixel_LC to an sf object
+TAB_pixel_LC_sf <- st_as_sf(TAB_pixel_LC, coords = c("long", "lat"), crs = 4326)  # Assumes 'longitude' and 'latitude' columns exist
+# Create the map
+map <- ggplot(data = countries) +
+  geom_sf(fill = "#EBEBEB", color = "black") +  # Countries' borders
+  geom_sf(data = TAB_pixel_LC_sf, aes(color = color), size = 0.05, show.legend = FALSE) +  # Points with custom colors
+  scale_color_identity() +  # Use exact colors from the 'color' column
+  coord_sf(xlim = c(-15, 15), ylim = c(28, 52), expand = FALSE) +  # Set geographic limits
+  theme_minimal() +
+  labs(title = "Adaptive Landscape") +
+  theme(panel.background = element_blank())
+
+map
+```
+![image](https://github.com/user-attachments/assets/3565dc05-4468-44fc-ba7b-b628c9565158)
