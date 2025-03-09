@@ -750,7 +750,7 @@ Use the RDA model (_RDA_142WW_enriched_) to predict pixel adaptive value (locati
 ```
 
 #prediction of pixel in the RDA space
-scaled_pixel_LC <- predict(RDA_142WW_enriched, newdata=ENV, type="lc",scaling = "sites")
+scaled_pixel_LC <- predict(RDA_142WW_enriched, newdata=scaled_pixel, type="lc",scaling = "sites")
 TAB_pixel_LC<- data.frame(lat = pixel$y, long = pixel$x, scaled_pixel_LC[,1:3])
 TAB_var <- as.data.frame(scores(RDA_142WW_enriched, choices=c(1,2), display="bp"))
 ```
@@ -821,4 +821,13 @@ map <- ggplot(data = countries) +
 
 map
 ```
-![image](https://github.com/user-attachments/assets/3565dc05-4468-44fc-ba7b-b628c9565158)
+![image](https://github.com/user-attachments/assets/32aae55a-c0ee-42d6-b398-ec0ad472af22)
+
+
+
+## Cultivar offset
+Prepare genotypic datafile for cultivated accessions
+Filter cultivar accessions frol vcf file
+```
+vcftools --vcf /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/WC708_lec24_DP10_100_miss090_ind085_mac1.vcf.recode.vcf --keep /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/list_cultivars.txt  --recode --recode-INFO-all --out /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/Cultivar_319_lec24_DP10_100_miss090_ind085_mac1.vcf
+```
