@@ -602,6 +602,72 @@ GEA for precipitation variables resulted in 5191 SNPs FDR and among them 177 hig
 ```
 ![image](https://github.com/user-attachments/assets/dc0d5d59-148a-4b39-9fa1-ba1076835bff)
 
+>All variables together
+```
+ Y <- geno155
+  sel_latent<- data.frame(Env%>% dplyr::select(bio2, bio10, bio11, bio15, bio18, bio19,clay, N, pH, sand))
+  write.env(sel_latent, "latent_all_variable.env")
+  X = read.table("latent_all_variable.env")
+  
+  mod.lfmm2 <- lfmm2(input = Y, env = X, K = 3)
+  str(mod.lfmm2)
+  mod.lfmm2@U
+  #Merge latent factor to Variable
+  latent_all_var<-data.frame(rownames(geno155), mod.lfmm2@U)
+  latent_all_var<-cbind(Variables,latent_all_var)  
+  
+  RDA_all <- rda(geno155 ~ 	bio2+ bio10+ bio11+ bio15+ bio18+ bio19+clay+ N+ pH+ sand+ Condition(X1 + X2 + X3 ), latent_all_var)
+  summary(eigenvals(RDA_all, model = "constrained"))
+  plot(RDA_all)
+  
+  rdadapt_all<- rdadapt(RDA_all, 2) 
+  ## P-values threshold after Bonferroni correction
+  thres_env <- 0.05/length(rdadapt_all$p.values)
+  ## Identifying the loci that are below the p-value threshold
+  top_outliers <- data.frame(Loci = colnames(geno155)[which(rdadapt_all$p.values<thres_env)], p.value = rdadapt_all$p.values[which(rdadapt_all$p.values<thres_env)], contig = unlist(lapply(strsplit(colnames(geno155)[which(rdadapt_all$p.values<thres_env)], split = "_"), function(x) x[1])))
+  
+  qvalue <- data.frame(Loci = colnames(geno155), p.value = rdadapt_all$p.values, q.value = rdadapt_all$q.value)
+  outliers <- data.frame(Loci = colnames(geno155)[which(rdadapt_all$q.values<0.05)], p.value = rdadapt_all$p.values[which(rdadapt_all$q.values<0.05)])
+  hist(outliers$p.value)
+  
+  #plot GEA all
+  
+  locus_scores <- scores(RDA_all, choices=c(1:2), display="species", scaling="sites")
+  TAB_loci <- data.frame(names = row.names(locus_scores), locus_scores)
+  TAB_loci$type <- "Not associated"
+  TAB_loci$type[TAB_loci$names%in%outliers$Loci] <- "FDR"
+  TAB_loci$type[TAB_loci$names%in%top_outliers$Loci] <- "Bonferroni"
+  TAB_loci$type <- factor(TAB_loci$type, levels = c("Not associated", "FDR", "Bonferroni"))
+  TAB_var <- as.data.frame(scores(RDA_all, choices=c(1,2), display="bp"))
+  loading_all<-ggplot() +
+    geom_hline(yintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
+    geom_vline(xintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
+    geom_point(data = TAB_loci, aes(x=RDA1, y=RDA2, colour = type), size = 2.5) +
+    scale_color_manual(values = c("gray90", "#F9A242FF", "#6B4596FF")) +
+    geom_segment(data = TAB_var, aes(xend=RDA1, yend=RDA2, x=0, y=0), colour="black", size=0.15, linetype=1, arrow=arrow(length = unit(0.02, "npc"))) +
+    geom_label_repel(data = TAB_var, aes(x=1.1*RDA1, y=1.1*RDA2, label = row.names(TAB_var)), size = 3.8, family = "Times") +
+    xlab("RDA 1: 39.1%") + ylab("RDA 2: 24.2%") +
+    guides(color=guide_legend(title="Locus type")) +
+    theme_bw(base_size = 11, base_family = "Times") +
+    theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
+  loading_all
+
+library(qqman)
+  Manhattan_all <- read.csv(file = "All_GEA_WWE_3.csv", header=TRUE) #import the p value result for precipitation
+  jpeg(file = "/lustre/rocchettil/Manh_RDA_prec.jpeg")
+  manhattan(Manhattan_all, col = c("darkgreen", "gray60"),suggestiveline = -log10(0.001227563), genomewideline = -log10(1.961360e-07))
+  
+  dev.off()
+  
+  #P distribution
+  jpeg(file = "/lustre/rocchettil/Phist_Manh_RDA_prec.jpeg")
+  hist(Manhattan_all$P)
+  dev.off()
+```
+![image](https://github.com/user-attachments/assets/9ffb4744-7d68-4084-8fe4-67d78b120a01)
+
+
+
 GEA for soil variables resulted in 6271 SNPs FDR and among them 194 highly assoicciated Bonferroni correction
 
 ## Enriched RDA
