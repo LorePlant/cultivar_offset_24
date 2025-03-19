@@ -1,8 +1,14 @@
 # Landscape Genomic Tool to Assess the Adaptive Value of Cultivars: A Case Study in Western Mediterranean Olive
 This page is created to track progresses on my postdoctoral research in landscape genomics in a wester Mediterrenean Olive population.
-The population is composed by 359 individuals along a 15° latitude gradient from 30 to 45.
+## Abstract
+Crop wild relatives and landraces represent locally adapted germplasm that enable the application of landscape genomic studies and identify genomic signature of environmental adaptation (GEA). The derived information from such studies can be used to enhance and evaluate cultivar’s adaptive value. This approach can represent an advantageous opportunity particularly for perennial crops where multi-location field trials to test specific cultivar or new breeding clone adaptations are costly and required a significant amount of time to get results.
+We applied this approach to olive trees (Olea europaea subsp. europaea var. sylvestris), leveraging truly local wild germplasm from 30 populations sampled along a 13-degree north-south gradient, covering regions in Southern France, Corsica, Spain, and Morocco.
+Our analysis identified candidate genotype-environment associations (GEAs), allowing us to map the adaptive landscape of olive trees across the western Mediterranean basin. These findings can inform sapling recommendations aimed at capturing wild adaptive diversity.
+Using wild GEA quantitative trait loci (QTLs), we modeled the adaptive landscape for widely used cultivars identifying regions where adaptation could reduce the reliance on agricultural inputs by enhancing local performance.
+Additionally, considering the co-occurrence of wild and cultivars in the same area and the one-way gene flow from cultivars that are vegetatively propagated to wild populations, we could pinpoint areas where the cultivar offset is minimal. In these regions, the coexistence of wild and cultivated genotypes is less likely to disrupt the GEA pattern thereby preserving the integrity of wild adaptive diversity.
+Collectively, these findings provide valuable insights for developing strategies for the in-situ conservation of wild relatives and to inform breeding programs to address environmental adaptation.
 
-Index:
+## Index:
 
 - [vcf file preparation](https://github.com/LorePlant/cultivar_offset_24?tab=readme-ov-file#vcf-file-preparation)
 - [Population structure](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#analysis-of-population-structure)
