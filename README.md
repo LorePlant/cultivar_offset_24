@@ -12,7 +12,9 @@ Index:
 
 [Redundancy Analysis](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#rda)
 
-[Genotype Environment Associations (GEA)]
+[Genotype Environment Associations (GEA)](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#rda-for-genotype-environment-associations-gea)
+
+
 
 
 
