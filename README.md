@@ -2,6 +2,10 @@
 This page is created to track progresses on my postdoctoral research in landscape genomics in a wester Mediterrenean Olive population.
 The population is composed by 359 individuals along a 15° latitude gradient from 30 to 45.
 
+Index:
+[vcf file preparation](https://github.com/LorePlant/cultivar_offset_24?tab=readme-ov-file#vcf-file-preparation)
+
+
 ## vcf file preparation
 I started by filtering sites quality
 
