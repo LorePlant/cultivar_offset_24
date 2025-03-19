@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/e0928484-73ed-4d39-8fb2-4ebe33dd1dd1)
+
 This page is created to track progresses on my postdoctoral research in landscape genomics in a wester Mediterrenean Olive population.
 The population is composed by 359 individuals along a 15° latitude gradient from 30 to 45.
 
@@ -12,15 +12,6 @@ Index:
 - [Enriched RDA](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#enriched-rda)
 - [Adaptive Landscape projection](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#adaptive-landscape-projection)
 - [Cultivar Offset](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#cultivar-offset)
-
-
-
-
-
-
-
-
-
 
 ## vcf file preparation
 I started by filtering sites quality
