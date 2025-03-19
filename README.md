@@ -5,18 +5,13 @@ The population is composed by 359 individuals along a 15° latitude gradient fro
 Index:
 
 - [vcf file preparation](https://github.com/LorePlant/cultivar_offset_24?tab=readme-ov-file#vcf-file-preparation)
-
 - [Population structure](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#analysis-of-population-structure)
-
 - [Hybrid index](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#hybrid-index)
-
 - [Redundancy Analysis](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#rda)
-
 - [Genotype Environment Associations (GEA)](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#rda-for-genotype-environment-associations-gea)
-
 - [Enriched RDA](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#enriched-rda)
-
 - [Adaptive Landscape projection](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#adaptive-landscape-projection)
+- [Cultivar Offset](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#cultivar-offset)
 
 
 
