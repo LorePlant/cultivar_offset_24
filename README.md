@@ -1,4 +1,4 @@
-
+![image](https://github.com/user-attachments/assets/e0928484-73ed-4d39-8fb2-4ebe33dd1dd1)
 This page is created to track progresses on my postdoctoral research in landscape genomics in a wester Mediterrenean Olive population.
 The population is composed by 359 individuals along a 15° latitude gradient from 30 to 45.
 
@@ -691,28 +691,22 @@ library(qqman)
 GEA for soil variables resulted in 6271 SNPs FDR and among them 194 highly assoicciated Bonferroni correction
 
 ## Enriched RDA
-To visualize the adaptive differentiation among genotypes, I conducted an additional Redundancy Analysis (RDA) using only the GEA SNPs for the three seperate analysis for temperature, precipitation and soil variables (FDR, q<0.05).
-By using the same GEA QTLs, we are going to represent first the RDA biplot with all genotypes including Wild from East and West mediterrenean, than RDA adaptive landscape in west mediterrenean only. This last plot will represent the adaptive landscape in the West mediterrenean that includes potential genetic adaptation derived from easter germplasm
+To visualize the adaptive differentiation among genotypes, I conducted an additional Redundancy Analysis (RDA) using only the GEA SNPs (Bonferroni correction P< 0.05/Snps) derived from the RDA model that includes all the environmental variables (temperature, precipitation and soil). A total of 232 GEA SNPs were used.
+By using the same GEA QTLs, we are going to represent first the RDA biplot with all genotypes including Wild from East and West mediterrenean, than RDA adaptive landscape in west mediterrenean only. 
 ```
- ## A total of 12143 GEA QTL have been identified and used for RDA
-  
-  geno_Wild_GEA<-geno155[which((rdadapt_temp$q.values<0.05)|(rdadapt_prec$q.values<0.05)|(rdadapt_soil$q.values<0.05))]
-  write.table(geno_Wild_GEA, "geno_Wild_GEA_WWE.txt") #save the new GEA genotype data
-  geno_Wild_GEA<-read.table("geno_Wild_GEA_WWE.txt")
-  
-  
+ 
+  geno_Wild_allGEA<-geno155[which((rdadapt_all$p.values<thres_env))]
+  write.table(geno_Wild_allGEA, "geno_Wild_GEA_AllVariable_Bonferroni_WWE.txt")
+  geno_Wild_allGEA<-read.table("geno_Wild_GEA_AllVariable_Bonferroni_WWE.txt")
 
-  
-  RDA_all_enriched<-rda(geno_Wild_GEA ~ bio2 + bio10 + bio11 + bio15	+ bio18 + bio19 + N + pH + clay + sand, Variables)
+ RDA_all_enriched<-rda(geno_Wild_allGEA ~ bio2 + bio10 + bio11 + bio15	+ bio18 + bio19 + clay + N+ pH + sand , Variables)
   summary(eigenvals(RDA_all_enriched, model = "constrained"))
 plot(RDA_all_enriched)
 sqrt(vif.cca(RDA_all_enriched))
 
 # plot Geographic regions
 
-
 TAB_gen <- data.frame(geno = row.names(scores(RDA_all_enriched , display = "sites")), scores(RDA_all_enriched, display = "sites"))
-
 Geno <- merge(TAB_gen, Variables[, 1:5] ,by="geno")
 TAB_var <- as.data.frame(scores(RDA_all_enriched, choices=c(1,2), display="bp"))
 loading_geno_all_enriched_region<-ggplot() +
@@ -722,7 +716,7 @@ loading_geno_all_enriched_region<-ggplot() +
   scale_fill_manual(values = c("lightblue","darkgreen", "darkorange", "darkblue")) +
   geom_segment(data = TAB_var, aes(xend=RDA1*5, yend=RDA2*5, x=0, y=0), colour="black", linewidth =0.15, linetype=1, arrow=arrow(length = unit(0.02, "npc"))) +
   geom_label_repel(data = TAB_var, aes(x=5*RDA1, y=5*RDA2, label = row.names(TAB_var)), size = 3.2, family = "Times") +
-  xlab("RDA 1: 40.2%") + ylab("RDA 2: 32.2%") +
+  xlab("RDA 1: 58%") + ylab("RDA 2: 20%") +
   guides(color=guide_legend(title="Latitude gradient")) +
   theme_bw(base_size = 11, base_family = "Times") +
   theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
@@ -735,14 +729,29 @@ dev.off()
 #filter west med individuals
 
 list142WW<-read.table("list142WW.txt")
-geno_wild_GEA_142WW<- geno_Wild_GEA[rownames(geno_Wild_GEA)%in% list142WW$V1, ]
-Variables_142WW<- Variables[Variables$geno%in% list142WW$V1, ]
-RDA_142WW_enriched<-rda(geno_wild_GEA_142WW ~ bio2 + bio10 + bio11 + bio15	+ bio18 + bio19 + N + pH + clay + sand, Variables_142WW)
+dataWild_142W <- data_wild[data_wild$id%in% list142WW$V1, ]
+test_env <- dataWild_142W[, c("bio2", "bio10", "bio11", "bio15", "bio18", "bio19", "clay", "N", "pH", "sand")]
+Env <- scale(test_env, center=TRUE, scale=TRUE)
+# Extract the centering values
+env_center <- attr(Env, "scaled:center")
+# Extract the scaling values
+env_scale <- attr(Env, "scaled:scale")
+#transform into dataset
+Env <- as.data.frame(Env)
+Variables_142WW<-data.frame(geno=dataWild_142W$id,group = dataWild_142W$group, region = dataWild_142W$region, Env )
+
+
+
+geno_wild_GEA_142WW<- geno_Wild_allGEA[rownames(geno_Wild_allGEA)%in% list142WW$V1, ]
+
+RDA_142WW_enriched<-rda(geno_wild_GEA_142WW ~ bio2 + bio10 + bio11 + bio15	+ bio18 + bio19 +clay + N + pH +  sand, Variables_142WW)
+plot(RDA_142WW_enriched)
 summary(eigenvals(RDA_142WW_enriched, model = "constrained"))
+plot(eigenvals(RDA_142WW_enriched, model = "constrained"))
 
 TAB_gen <- data.frame(geno = row.names(scores(RDA_142WW_enriched , display = "sites")), scores(RDA_142WW_enriched, display = "sites"))
 
-Geno <- merge(TAB_gen, Variables[, 1:5] ,by="geno")
+Geno <- merge(TAB_gen, Variables_142WW[, 1:3] ,by="geno")
 TAB_var <- as.data.frame(scores(RDA_142WW_enriched, choices=c(1,2), display="bp"))
 loading_geno_142W_enriched_region<-ggplot() +
   geom_hline(yintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
@@ -751,7 +760,7 @@ loading_geno_142W_enriched_region<-ggplot() +
   scale_fill_manual(values = c("lightblue","darkgreen", "darkorange")) +
   geom_segment(data = TAB_var, aes(xend=RDA1*5, yend=RDA2*5, x=0, y=0), colour="black", linewidth =0.15, linetype=1, arrow=arrow(length = unit(0.02, "npc"))) +
   geom_label_repel(data = TAB_var, aes(x=5*RDA1, y=5*RDA2, label = row.names(TAB_var)), size = 3.2, family = "Times") +
-  xlab("RDA 1: 41.1%") + ylab("RDA 2: 16.6%") +
+  xlab("RDA 1: 69.7%") + ylab("RDA 2: 12.2%") +
   guides(color=guide_legend(title="Latitude gradient")) +
   theme_bw(base_size = 11, base_family = "Times") +
   theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
@@ -759,15 +768,17 @@ loading_geno_142W_enriched_region
 
 ggarrange(loading_geno_all_enriched_region, loading_geno_142W_enriched_region, nrow=1,ncol=2)
 ```
-![image](https://github.com/user-attachments/assets/933ca0b6-e16d-41ac-849a-2baebea0b216)
+![image](https://github.com/user-attachments/assets/88eee078-bb7c-4f95-8ace-e355b1ed0f51)
 
-In the first plot, we can see a clear differentiation among west and east mediterrenean on the first axis driven by soil pH and bio10(summer temperature). On the second axis we see a differentiation among south and north regions of the west mediterrenean, with the norther region in france with higher summer precipitation (bio18)and Nitrogen content opposite to the souther regions (Morocco and Spain) with higher winter temperature and clay.
 
-In the second plot we can see a clear diffentiation between two different landscpae in Morocco potentially highlight the difference betwen continental and costal Morocco. 
+In both plots, we can observe a clear differentiation between the North and South regions on the first RDA component, particularly in the West Mediterranean. This differentiation is driven by summer and winter temperatures (bio10, bio11), soil fertility, and summer precipitation (N, bio18). In the first RDA plot, the Turkish genotypes show distinct clustering along the second RDA component, which is associated with summer temperature and pH. In contrast, the second plot provides a clearer distinction between the West Mediterranean genotypes.
+
 
 ## Adaptive landscape projection
-By levaraging the enriched RDA model (RDA_142WW_enriched) we can estimate the adaptive value of each pixel within the olive niche.
-First lets upload raaster files previously cut using the ENM mask in QGIS
+To determine the adaptive value of each spatial pixel within the olive niche, I leveraged the enriched RDA model constructed using only the 142 wild western samples. As previously observed, this model provides a clearer distinction of GEA patterns in the Western Mediterranean.
+
+As fist step lets upload the raster files previously cut using niche model raster in QGIS
+
 ```
 library(raster)
 library("readxl")
@@ -825,9 +836,8 @@ NB: clay, pH; N and sand were adjusted according to the previous RDA model
 pixel <- as.data.frame(rasterToPoints(ras_current_var[[row.names(RDA_142WW_enriched$CCA$biplot)]]))
 pixel <- data.frame(x=pixel$x, y=pixel$y, bio2=pixel$bio2,bio10=pixel$bio10,bio11=pixel$bio11,bio15=pixel$bio15,bio18=pixel$bio18,bio19=pixel$bio19,clay=pixel$clay/10,N=pixel$N/100,pH=pixel$pH/10,sand=pixel$sand/10)
 pixel<-na.omit(pixel)
-pixel<- pixel[pixel$x>-10, ]
+pixel<- pixel[pixel$x>-10, ] #exclude canarie island
 pixel_env<- pixel%>% dplyr::select(bio2, bio10, bio11, bio15, bio18, bio19,clay, N, pH, sand)
-
 scaled_pixel <- scale(pixel_env, center = env_center, scale = env_scale)
 scaled_pixel<-as.data.frame(scaled_pixel)
 ```
@@ -837,7 +847,7 @@ Use the RDA model (_RDA_142WW_enriched_) to predict pixel adaptive value (locati
 
 #prediction of pixel in the RDA space
 scaled_pixel_LC <- predict(RDA_142WW_enriched, newdata=scaled_pixel, type="lc",scaling = "sites")
-TAB_pixel_LC<- data.frame(lat = pixel$y, long = pixel$x, scaled_pixel_LC[,1:3])
+TAB_pixel_LC<- data.frame(lat = pixel$y, long = pixel$x, scaled_pixel_LC)
 TAB_var <- as.data.frame(scores(RDA_142WW_enriched, choices=c(1,2), display="bp"))
 ```
 Plot the biplot and the geographic projection
@@ -851,24 +861,24 @@ a2 <- TAB_pixel_LC$RDA2
 distance <- sqrt(a1^2 + a2^2)
 
 # Assign colors based on quadrants and the 5th sector (circle radius < 0.5)
-TAB_pixel_LC$color <- ifelse(distance < 0.5, "#717171",  # 5th sector - Purple
-                             ifelse(a1 > 0 & a2 > 0, "#E41A1C",  # Quadrant 1 - Red
-                                    ifelse(a1 < 0 & a2 > 0, "#377EB8",  # Quadrant 2 - Blue
-                                           ifelse(a1 < 0 & a2 < 0, "#4DAF4A",  # Quadrant 3 - Green
-                                                  "#FF7F00"))))  # Quadrant 4 - Orange
+TAB_pixel_LC$color <- ifelse(distance < 0.25, "#717171",  # 5th sector - Purple
+                             ifelse(a1 > 0 & a2 > 0, "#4DAF4A",  # Quadrant 1 - Red
+                                    ifelse(a1 < 0 & a2 > 0, "#FF7F00",  # Quadrant 2 - Blue
+                                           ifelse(a1 < 0 & a2 < 0, "#E41A1C",  # Quadrant 3 - Green
+                                                  "#377EB8"))))  # Quadrant 4 - Orange
 
 # Update ggplot with quadrant-based colors and 5th sector
 pp <- ggplot() +
   geom_hline(yintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
   geom_vline(xintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
   geom_point(data = TAB_pixel_LC, aes(x = RDA1, y = RDA2, color = color), size = 2) +  # Use sector colors
-  geom_segment(data = TAB_var, aes(xend = RDA1*3, yend = RDA2*3, x = 0, y = 0), 
+  geom_segment(data = TAB_var, aes(xend = RDA1, yend = RDA2, x = 0, y = 0), 
                colour = "black", size = 0.15, linetype = 1, 
                arrow = arrow(length = unit(0.20, "cm"), type = "closed")) +
-  geom_label_repel(data = TAB_var, aes(x = RDA1*3, y = RDA2*3, label = row.names(TAB_var)), 
+  geom_label_repel(data = TAB_var, aes(x = RDA1, y = RDA2, label = row.names(TAB_var)), 
                    size = 4, family = "Times") +
-  xlab("RDA 1: 41.1%") + 
-  ylab("RDA 2: 16.6%") +
+  xlab("RDA 1: 69.7%") + 
+  ylab("RDA 2: 12.2%") +
   theme_bw(base_size = 9, base_family = "Times") +
   theme(panel.background = element_blank(), 
         legend.background = element_blank(), 
@@ -904,11 +914,10 @@ map <- ggplot(data = countries) +
   theme_minimal() +
   labs(title = "Adaptive Landscape") +
   theme(panel.background = element_blank())
-
 map
-```
-![image](https://github.com/user-attachments/assets/32aae55a-c0ee-42d6-b398-ec0ad472af22)
 
+```
+![image](https://github.com/user-attachments/assets/59aede7c-23f1-4cef-98f5-2205e7fdf51b)
 
 
 ## Cultivar offset
@@ -916,12 +925,351 @@ Prepare genotypic datafile for cultivated accessions
 Filter cultivar accessions frol vcf file
 ```
 vcftools --vcf /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/WC708_lec24_DP10_100_miss090_ind085_mac1.vcf.recode.vcf --keep /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/list_cultivars.txt  --recode --recode-INFO-all --out /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/Cultivar_319_lec24_DP10_100_miss090_ind085_mac1.vcf
-
-#only Leccino Arbequina Picholine
-
-vcftools --vcf /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/WC708_lec24_DP10_100_miss090_ind085_mac1.vcf.recode.vcf --keep /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/Leccino_arbequina_picholine.txt  --recode --recode-INFO-all --out /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/Leccino_Arb_pich_lec24_DP10_100_miss090_ind085_mac1.vcf
-
-#late and early cultivars
-vcftools --vcf /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/WC708_lec24_DP10_100_miss090_ind085_mac1.vcf.recode.vcf --keep /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/early_late_cultivars.txt  --recode --recode-INFO-all --out /storage/replicated/cirad/projects/CLIMOLIVEMED/results/GenomicOffsets/Lorenzo/Leccino_new_genome24/ealy_late_cultivar_lec24_DP10_100_miss090_ind085_mac1.vcf
+```
+Upload vcf file in R and filter for GEA QTLs. This procedure was run in the MesoLab cluster
 
 ```
+geno_cultivar<- read.vcfR("D:/vcf_file_GEA_leccino/Cultivar_319_lec24_DP10_100_miss090_ind085_mac1.vcf.recode.vcf")
+ GI <- vcfR2genind(geno_cultivar)#transforom file in genind object
+geno_cultivar<-as.data.frame(GI)
+geno_cultivar <- dplyr::select(geno_cultivar, ends_with(".0"))
+GEA <- colnames(geno_Wild_allGEA)
+GEA_geno_cultivar<-dplyr::select(geno_cultivar, all_of(GEA))
+
+#imputation
+for (i in 1:ncol(GEA_geno_cultivar))
+{
+  GEA_geno_cultivar[which(is.na(GEA_geno_cultivar[,i])),i] <- median(GEA_geno_cultivar[-which(is.na(GEA_geno_cultivar[,i])),i], na.rm=TRUE)
+}
+```
+Use the enriched RDA model to predict the adaptive value of new genotypes using the function _predict_ and estimate the weighted mean value of the genotypes based on its SNP value _type = "wa"_. 
+Keep _scaling = "sites"_ as previously done for the spatial pixel estimation. 
+
+```
+RDAscore_cul <- predict(RDA_142WW_enriched, newdata=GEA_cultivars, type="wa", scaling = "sites")
+```
+From the predicted RDA values of all the cultivars I selected two extream cultivars based on RDA1 score: the first one is _Uovo di Piccione_ where the prevailing consensus suggests a Tunisian origin, _Wateken_ originally from the Siwa oasis Egypt and _Frantoio_ from Toscany at the North shore of the Mediterrenean basin.
+For these three cultivars I estimated the _genocmic offset_ as the Euclidean distance (calcolated on three RDAs) between the genotype locations in the enriched RDA space and each spatial pixel previously mapped in the enriched RDA space based on their environmental values. 
+The _z-score_ of the _GO_ results for each cultivar were geographically mapped offering the possibility to visualize the geographic area where these cultivar are better adapted.
+
+> Uovo di Piccione
+```
+###### Uovo di Piccione
+
+uovo_di_piccione <- GEA_cultivars[rownames(GEA_cultivars) == "Uovo_di_Piccione", ]
+
+Uovo_di_Piccione <- predict(RDA_142WW_enriched, newdata=uovo_di_piccione, type="wa", scaling = "sites")
+Uovo_di_Piccione<-as.data.frame(Uovo_di_Piccione)
+
+#Plot RDA Leccino position and the Pixel_LC
+UP_x <- -0.2219426  # Specify your x-coordinate
+UP_y <- 0.1045615 # Specify your y-coordinate
+
+UP <- ggplot() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
+  geom_point(data = TAB_pixel_LC, aes(x = RDA1, y = RDA2, color = "gray"), size = 2) +  # Use sector colors
+  geom_segment(data = TAB_var, aes(xend = RDA1, yend = RDA2, x = 0, y = 0), 
+               colour = "black", size = 0.15, linetype = 1, 
+               arrow = arrow(length = unit(0.20, "cm"), type = "closed")) +
+  geom_label_repel(data = TAB_var, aes(x = RDA1, y = RDA2, label = row.names(TAB_var)), 
+                   size = 4, family = "Times") +
+  geom_point(aes(x = UP_x, y = UP_y), color = "orange", size = 4, shape = 17) +  # Highlight point in yellow
+  xlab("RDA 1: 69.7%") + 
+  ylab("RDA 2: 12.2%") +
+  theme_bw(base_size = 9, base_family = "Times") +
+  theme(panel.background = element_blank(), 
+        legend.background = element_blank(), 
+        panel.grid = element_blank(), 
+        plot.background = element_blank(), 
+        legend.text = element_text(size = rel(0.8)), 
+        strip.text = element_text(size = 9)) +
+  scale_color_identity()  # Use predefined colors directly
+UP
+
+TAB_pixel_LC$uovo_piccione_offset<- sqrt((Uovo_di_Piccione$RDA1 - TAB_pixel_LC$RDA1)^2 + (Uovo_di_Piccione$RDA2 - TAB_pixel_LC$RDA2)^2 + (Uovo_di_Piccione$RDA3 - TAB_pixel_LC$RDA3)^2)
+hist(TAB_pixel_LC$uovo_piccione_offset)
+TAB_pixel_LC$uovo_piccione_offset<-scale(TAB_pixel_LC$uovo_piccione_offset)
+hist(TAB_pixel_LC$uovo_piccione_offset)
+
+# Calculate the mean and standard deviation
+mean_value <- mean(TAB_pixel_LC$uovo_piccione_offset, na.rm = TRUE)
+sd_value <- sd(TAB_pixel_LC$uovo_piccione_offset, na.rm = TRUE)
+
+# Compute breaks for the column
+sd_breaks <- c( min(TAB_pixel_LC$uovo_piccione_offset, na.rm = TRUE), mean_value-sd_value, mean_value, mean_value+sd_value, max(TAB_pixel_LC$uovo_piccione_offset, na.rm = TRUE))
+
+# Create a color palette from blue to yellow
+
+color_palette <- c("darkgreen", "gold2", "darkorange3", "darkred")  # 4 quantiles
+# Assign colors based on quantiles
+TAB_pixel_LC$uovo_piccione_color <- cut(TAB_pixel_LC$uovo_piccione_offset, breaks = sd_breaks, labels = color_palette)
+
+## plot in geographic map
+
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+# Load geographic boundaries of France, Spain, Morocco, Portugal, and Algeria
+countries <- ne_countries(scale = "medium", country = c("France", "Spain", "Morocco", "Portugal", "Algeria"), returnclass = "sf")
+
+# Remove French Guiana and Atlantic French territories
+countries <- countries[!(countries$geounit %in% c("French Guiana", "Guadeloupe", "Martinique", "Saint Pierre and Miquelon", 
+                                                  "Reunion", "Mayotte", "New Caledonia", "French Polynesia", 
+                                                  "Wallis and Futuna", "Saint Barthelemy", "Saint Martin")), ]
+
+# Convert TAB_pixel_LC to an sf object
+TAB_pixel_LC_sf <- st_as_sf(TAB_pixel_LC, coords = c("long", "lat"), crs = 4326)  # Assumes 'longitude' and 'latitude' columns exist
+# Create the map
+map <- ggplot(data = countries) +
+  geom_sf(fill = "#EBEBEB", color = "black") +  # Countries' borders
+  geom_sf(data = TAB_pixel_LC_sf, aes(color = uovo_piccione_color), size = 0.05, show.legend = FALSE) +  # Points with custom colors
+  scale_color_identity() +  # Use exact colors from the 'color' column
+  coord_sf(xlim = c(-15, 15), ylim = c(28, 52), expand = FALSE) +  # Set geographic limits
+  theme_minimal() +
+  labs(title = "Adaptive Landscape Uovo di Piccione") +
+  theme(panel.background = element_blank())
+
+#jpeg(file = "C:/Users/rocchetti/Desktop/running RDA GO/adaptive_landscape_rgb.jpeg",width = 18, height = 14, units = "cm", res = 800)
+map
+
+TAB_pixel_LC$bin <- cut(TAB_pixel_LC$uovo_piccione_offset, breaks = sd_breaks, include.lowest = TRUE)
+
+# Map bins to colors
+bin_levels <- levels(TAB_pixel_LC$bin)
+color_map <- setNames(color_palette, bin_levels)
+TAB_pixel_LC$color_uovo_piccione <- color_map[as.character(TAB_pixel_LC$bin)]
+
+# Create histogram without plotting
+hist_data <- hist(TAB_pixel_LC$uovo_piccione_offset, breaks = 30, plot = FALSE)
+
+# Find which bins correspond to which colors
+bin_indices <- cut(hist_data$mids, breaks = sd_breaks, include.lowest = TRUE)
+bin_colors <- color_map[as.character(bin_indices)]
+
+# Plot histogram with colors
+barplot(hist_data$counts, col = bin_colors, border = "black", space = 0, 
+        names.arg = round(hist_data$mids, 2), xlab = "Uovo di Piccione Offset (Standardized)", 
+        ylab = "Frequency", main = "Uovo di Piccione Offset", las = 1, yaxt = "n")
+```
+
+![image](https://github.com/user-attachments/assets/05782d98-5676-4246-8d1f-078fff091be7)
+
+> Wateken
+
+```
+
+Wateken <- GEA_cultivars[rownames(GEA_cultivars) == "Wateken1", ]
+
+WatekenRDA <- predict(RDA_142WW_enriched, newdata=Wateken, type="wa", scaling = "sites")
+WatekenRDA<-as.data.frame(WatekenRDA)
+
+#Plot RDA Leccino position and the Pixel_LC
+Wa_x <- -0.2621414  # Specify your x-coordinate
+Wa_y <- 0.1110175 # Specify your y-coordinate
+
+Wa <- ggplot() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
+  geom_point(data = TAB_pixel_LC, aes(x = RDA1, y = RDA2, color = "gray"), size = 2) +  # Use sector colors
+  geom_segment(data = TAB_var, aes(xend = RDA1, yend = RDA2, x = 0, y = 0), 
+               colour = "black", size = 0.15, linetype = 1, 
+               arrow = arrow(length = unit(0.20, "cm"), type = "closed")) +
+  geom_label_repel(data = TAB_var, aes(x = RDA1, y = RDA2, label = row.names(TAB_var)), 
+                   size = 4, family = "Times") +
+  geom_point(aes(x = Wa_x, y = Wa_y), color = "orange", size = 4, shape = 17) +  # Highlight point in yellow
+  xlab("RDA 1: 69.7%") + 
+  ylab("RDA 2: 12.2%") +
+  theme_bw(base_size = 9, base_family = "Times") +
+  theme(panel.background = element_blank(), 
+        legend.background = element_blank(), 
+        panel.grid = element_blank(), 
+        plot.background = element_blank(), 
+        legend.text = element_text(size = rel(0.8)), 
+        strip.text = element_text(size = 9)) +
+  scale_color_identity()  # Use predefined colors directly
+Wa
+
+
+TAB_pixel_LC$Wateken_offset<- sqrt((WatekenRDA$RDA1 - TAB_pixel_LC$RDA1)^2 + (WatekenRDA$RDA2 - TAB_pixel_LC$RDA2)^2 + (WatekenRDA$RDA3 - TAB_pixel_LC$RDA3)^2)
+hist(TAB_pixel_LC$Wateken_offset)
+TAB_pixel_LC$Wateken_offset<-scale(TAB_pixel_LC$Wateken_offset)
+hist(TAB_pixel_LC$Wateken_offset)
+
+# Calculate the mean and standard deviation
+mean_value <- mean(TAB_pixel_LC$Wateken_offset, na.rm = TRUE)
+sd_value <- sd(TAB_pixel_LC$Wateken_offset, na.rm = TRUE)
+
+# Compute breaks for the column
+sd_breaks <- c( min(TAB_pixel_LC$Wateken_offset, na.rm = TRUE), mean_value-sd_value, mean_value, mean_value+sd_value, max(TAB_pixel_LC$Wateken_offset, na.rm = TRUE))
+
+
+
+# Create a color palette from blue to yellow
+
+color_palette <- c("darkgreen", "gold2", "darkorange3", "darkred")  # 4 quantiles
+# Assign colors based on quantiles
+TAB_pixel_LC$Wateken_color <- cut(TAB_pixel_LC$Wateken_offset, breaks = sd_breaks, labels = color_palette)
+
+## plot in geographic map
+
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+# Load geographic boundaries of France, Spain, Morocco, Portugal, and Algeria
+countries <- ne_countries(scale = "medium", country = c("France", "Spain", "Morocco", "Portugal", "Algeria"), returnclass = "sf")
+
+# Remove French Guiana and Atlantic French territories
+countries <- countries[!(countries$geounit %in% c("French Guiana", "Guadeloupe", "Martinique", "Saint Pierre and Miquelon", 
+                                                  "Reunion", "Mayotte", "New Caledonia", "French Polynesia", 
+                                                  "Wallis and Futuna", "Saint Barthelemy", "Saint Martin")), ]
+
+# Convert TAB_pixel_LC to an sf object
+TAB_pixel_LC_sf <- st_as_sf(TAB_pixel_LC, coords = c("long", "lat"), crs = 4326)  # Assumes 'longitude' and 'latitude' columns exist
+# Create the map
+map <- ggplot(data = countries) +
+  geom_sf(fill = "#EBEBEB", color = "black") +  # Countries' borders
+  geom_sf(data = TAB_pixel_LC_sf, aes(color = Wateken_color), size = 0.05, show.legend = FALSE) +  # Points with custom colors
+  scale_color_identity() +  # Use exact colors from the 'color' column
+  coord_sf(xlim = c(-15, 15), ylim = c(28, 52), expand = FALSE) +  # Set geographic limits
+  theme_minimal() +
+  labs(title = "Adaptive Landscape Wateken") +
+  theme(panel.background = element_blank())
+
+#jpeg(file = "C:/Users/rocchetti/Desktop/running RDA GO/adaptive_landscape_rgb.jpeg",width = 18, height = 14, units = "cm", res = 800)
+map
+
+TAB_pixel_LC$bin <- cut(TAB_pixel_LC$Wateken_offset, breaks = sd_breaks, include.lowest = TRUE)
+
+# Map bins to colors
+bin_levels <- levels(TAB_pixel_LC$bin)
+color_map <- setNames(color_palette, bin_levels)
+TAB_pixel_LC$color_Wateken <- color_map[as.character(TAB_pixel_LC$bin)]
+
+# Create histogram without plotting
+hist_data <- hist(TAB_pixel_LC$Wateken_offset, breaks = 30, plot = FALSE)
+
+# Find which bins correspond to which colors
+bin_indices <- cut(hist_data$mids, breaks = sd_breaks, include.lowest = TRUE)
+bin_colors <- color_map[as.character(bin_indices)]
+
+# Plot histogram with colors
+barplot(hist_data$counts, col = bin_colors, border = "black", space = 0, 
+        names.arg = round(hist_data$mids, 2), xlab = "Wateken Offset (Standardized)", 
+        ylab = "Frequency", main = "Wateken Offset", las = 1, yaxt = "n")
+```
+![image](https://github.com/user-attachments/assets/7f7441f3-bc6d-4668-beca-aeec6af8d887)
+
+> Frantoio
+
+```
+Frantoio <- GEA_cultivars[rownames(GEA_cultivars) == "Frantoio", ]
+
+FrantoioRDA <- predict(RDA_142WW_enriched, newdata=Frantoio, type="wa", scaling = "sites")
+FrantoioRDA<-as.data.frame(FrantoioRDA)
+
+#Plot RDA Leccino position and the Pixel_LC
+FR_x <- 0.2397479  # Specify your x-coordinate
+FR_y <- 0.244145 # Specify your y-coordinate
+
+FR <- ggplot() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
+  geom_point(data = TAB_pixel_LC, aes(x = RDA1, y = RDA2, color = "gray"), size = 2) +  # Use sector colors
+  geom_segment(data = TAB_var, aes(xend = RDA1, yend = RDA2, x = 0, y = 0), 
+               colour = "black", size = 0.15, linetype = 1, 
+               arrow = arrow(length = unit(0.20, "cm"), type = "closed")) +
+  geom_label_repel(data = TAB_var, aes(x = RDA1, y = RDA2, label = row.names(TAB_var)), 
+                   size = 4, family = "Times") +
+  geom_point(aes(x = FR_x, y = FR_y), color = "orange", size = 4, shape = 17) +  # Highlight point in yellow
+  xlab("RDA 1: 69.7%") + 
+  ylab("RDA 2: 12.2%") +
+  theme_bw(base_size = 9, base_family = "Times") +
+  theme(panel.background = element_blank(), 
+        legend.background = element_blank(), 
+        panel.grid = element_blank(), 
+        plot.background = element_blank(), 
+        legend.text = element_text(size = rel(0.8)), 
+        strip.text = element_text(size = 9)) +
+  scale_color_identity()  # Use predefined colors directly
+FR
+
+
+TAB_pixel_LC$Frantoio_offset<- sqrt((FrantoioRDA$RDA1 - TAB_pixel_LC$RDA1)^2 + (FrantoioRDA$RDA2 - TAB_pixel_LC$RDA2)^2 + (FrantoioRDA$RDA3 - TAB_pixel_LC$RDA3)^2)
+hist(TAB_pixel_LC$Frantoio_offset)
+TAB_pixel_LC$Frantoio_offset<-scale(TAB_pixel_LC$Frantoio_offset)
+hist(TAB_pixel_LC$Frantoio_offset)
+
+# Calculate the mean and standard deviation
+mean_value <- mean(TAB_pixel_LC$Frantoio_offset, na.rm = TRUE)
+sd_value <- sd(TAB_pixel_LC$Frantoio_offset, na.rm = TRUE)
+
+# Compute breaks for the column
+sd_breaks <- c( min(TAB_pixel_LC$Frantoio_offset, na.rm = TRUE), mean_value-sd_value, mean_value, mean_value+sd_value, max(TAB_pixel_LC$Frantoio_offset, na.rm = TRUE))
+
+
+
+# Create a color palette from blue to yellow
+
+color_palette <- c("darkgreen", "gold2", "darkorange3", "darkred")  # 4 quantiles
+# Assign colors based on quantiles
+TAB_pixel_LC$frantoio_color <- cut(TAB_pixel_LC$Frantoio_offset, breaks = sd_breaks, labels = color_palette)
+
+## plot in geographic map
+
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+# Load geographic boundaries of France, Spain, Morocco, Portugal, and Algeria
+countries <- ne_countries(scale = "medium", country = c("France", "Spain", "Morocco", "Portugal", "Algeria"), returnclass = "sf")
+
+# Remove French Guiana and Atlantic French territories
+countries <- countries[!(countries$geounit %in% c("French Guiana", "Guadeloupe", "Martinique", "Saint Pierre and Miquelon", 
+                                                  "Reunion", "Mayotte", "New Caledonia", "French Polynesia", 
+                                                  "Wallis and Futuna", "Saint Barthelemy", "Saint Martin")), ]
+
+# Convert TAB_pixel_LC to an sf object
+TAB_pixel_LC_sf <- st_as_sf(TAB_pixel_LC, coords = c("long", "lat"), crs = 4326)  # Assumes 'longitude' and 'latitude' columns exist
+# Create the map
+map <- ggplot(data = countries) +
+  geom_sf(fill = "#EBEBEB", color = "black") +  # Countries' borders
+  geom_sf(data = TAB_pixel_LC_sf, aes(color = frantoio_color), size = 0.05, show.legend = FALSE) +  # Points with custom colors
+  scale_color_identity() +  # Use exact colors from the 'color' column
+  coord_sf(xlim = c(-15, 15), ylim = c(28, 52), expand = FALSE) +  # Set geographic limits
+  theme_minimal() +
+  labs(title = "Adaptive Landscape Frantoio") +
+  theme(panel.background = element_blank())
+
+#jpeg(file = "C:/Users/rocchetti/Desktop/running RDA GO/adaptive_landscape_rgb.jpeg",width = 18, height = 14, units = "cm", res = 800)
+map
+
+TAB_pixel_LC$bin <- cut(TAB_pixel_LC$Frantoio_offset, breaks = sd_breaks, include.lowest = TRUE)
+
+# Map bins to colors
+bin_levels <- levels(TAB_pixel_LC$bin)
+color_map <- setNames(color_palette, bin_levels)
+TAB_pixel_LC$color_frantoio <- color_map[as.character(TAB_pixel_LC$bin)]
+
+# Create histogram without plotting
+hist_data <- hist(TAB_pixel_LC$Frantoio_offset, breaks = 30, plot = FALSE)
+
+# Find which bins correspond to which colors
+bin_indices <- cut(hist_data$mids, breaks = sd_breaks, include.lowest = TRUE)
+bin_colors <- color_map[as.character(bin_indices)]
+
+# Plot histogram with colors
+barplot(hist_data$counts, col = bin_colors, border = "black", space = 0, 
+        names.arg = round(hist_data$mids, 2), xlab = "Frantoio Offset (Standardized)", 
+        ylab = "Frequency", main = "Frantoio Offset", las = 1, yaxt = "n")
+```
+![image](https://github.com/user-attachments/assets/3cc98cc6-7a6b-44f4-a9b4-4ea17ead126d)
+
+From these results we can conlude how the model clearly differentiate cultivars based on their origin. _Uovo di Piccione_ and _Weteken_ originally from lower latitude have low offset in souther countries like Morocco, Algeria and Souther Spain (Andalusia). On the other hand _Frantoio_ shows high offset in Morocco and better suitability in the entire Spain as well as in the souther France area.
+
+
+
+
+
