@@ -1051,7 +1051,8 @@ barplot(hist_data$counts, col = bin_colors, border = "black", space = 0,
         ylab = "Frequency", main = "Uovo di Piccione Offset", las = 1, yaxt = "n")
 ```
 
-![image](https://github.com/user-attachments/assets/05782d98-5676-4246-8d1f-078fff091be7)
+![image](https://github.com/user-attachments/assets/359f8c02-e037-4858-8fdc-935107882367)
+
 
 > Wateken
 
@@ -1157,7 +1158,8 @@ barplot(hist_data$counts, col = bin_colors, border = "black", space = 0,
         names.arg = round(hist_data$mids, 2), xlab = "Wateken Offset (Standardized)", 
         ylab = "Frequency", main = "Wateken Offset", las = 1, yaxt = "n")
 ```
-![image](https://github.com/user-attachments/assets/7f7441f3-bc6d-4668-beca-aeec6af8d887)
+![image](https://github.com/user-attachments/assets/b13aa382-bb14-4bbc-a2f9-e7d817d2c2b2)
+
 
 > Frantoio
 
@@ -1262,9 +1264,10 @@ barplot(hist_data$counts, col = bin_colors, border = "black", space = 0,
         names.arg = round(hist_data$mids, 2), xlab = "Frantoio Offset (Standardized)", 
         ylab = "Frequency", main = "Frantoio Offset", las = 1, yaxt = "n")
 ```
-![image](https://github.com/user-attachments/assets/3cc98cc6-7a6b-44f4-a9b4-4ea17ead126d)
+![image](https://github.com/user-attachments/assets/09b2a4fc-dba7-41b9-88b5-80cf1fd5f915)
 
-From these results we can conlude how the model clearly differentiate cultivars based on their origin. _Uovo di Piccione_ and _Weteken_ originally from lower latitude have low offset in souther countries like Morocco, Algeria and Souther Spain (Andalusia). On the other hand _Frantoio_ shows high offset in Morocco and better suitability in the entire Spain as well as in the souther France area.
+
+From these results we can conclude how the model clearly differentiate cultivars based on their origin. _Uovo di Piccione_ and _Weteken_ originally from lower latitude have low offset in souther countries like Morocco, Algeria and Souther Spain (Andalusia). On the other hand _Frantoio_ shows high offset in Morocco and better suitability in the entire Spain as well as in the souther France area.
 
 
 
