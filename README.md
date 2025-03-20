@@ -845,11 +845,10 @@ scaled_pixel<-as.data.frame(scaled_pixel)
 ```
 Use the RDA model (_RDA_142WW_enriched_) to predict pixel adaptive value (location within the RDA space). 
 I use the _predict_ function of _vegan_ pckage _type "lc"_. 
+
 This function allows to compute the site (picel) scores  as a **linear combination of environmental variables**:
 
-\[
-LC_i = \sum_{j} (X_{ij} \cdot b_j)
-\]
+\[LC_i = \sum_{j} (X_{ij} \cdot b_j)\]
 
 where:
 - \( LC_i \) = linear constrained score for site \( i \),
@@ -961,9 +960,7 @@ Keep _scaling = "sites"_ as previously done for the spatial pixel estimation.
 
 The site scores are computed as a **weighted average of species (allele) scores**:
 
-\[
-WA_i = \sum_{s} (Y_{is} \cdot u_s)
-\]
+\[WA_i = \sum_{s} (Y_{is} \cdot u_s)\]
 
 where:
 - \( WA_i \) = weighted average site score for site \( i \),
