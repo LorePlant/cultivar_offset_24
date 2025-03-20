@@ -853,9 +853,9 @@ LC_i = \sum_{j} (X_{ij} \cdot b_j)
 $$
 
 Where:
-- \( LC_i \) is the linear constrained score for site \( i \),
-- \( X_{ij} \) is the value of environmental variable \( j \) for site \( i \),
-- \( b_j \) is the regression coefficient of environmental variable \( j \).
+- `LC_i` is the linear constrained score for site `i`,
+- `X_{ij}` is the value of environmental variable `j` for site `i`,
+- `b_j` is the regression coefficient for environmental variable `j`.
 
 
 ```
