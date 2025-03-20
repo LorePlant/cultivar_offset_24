@@ -962,12 +962,14 @@ Keep _scaling = "sites"_ as previously done for the spatial pixel estimation.
 
 The site scores are computed as a **weighted average of species (allele) scores**:
 
-\[WA_i = \sum_{s} (Y_{is} \cdot u_s)\]
+$$
+WA_i = \sum_{s} (Y_{is} \cdot u_s)
+$$
 
-where:
-- \( WA_i \) = weighted average site score for site \( i \),
-- \( Y_{is} \) = abundance (or presence-absence) of species (allele) \( s \) at site \( i \),
-- \( u_s \) = species (allele) score for species (allele) \( s \).
+Where:
+- `WA_i` is the weighted average site score for site `i`,
+- `Y_{is}` is the abundance (or presence-absence) of species (allele) `s` at site `i`,
+- `u_s` is the species (allele) score for species (allele) `s`.
 
 ```
 RDAscore_cul <- predict(RDA_142WW_enriched, newdata=GEA_cultivars, type="wa", scaling = "sites")
