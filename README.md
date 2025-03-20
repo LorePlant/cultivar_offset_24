@@ -848,7 +848,9 @@ I use the _predict_ function of _vegan_ pckage _type "lc"_.
 
 This function allows to compute the site (picel) scores  as a **linear combination of environmental variables**:
 
-$ LC_i = \sum_{j} (X_{ij} \cdot b_j) $
+$$
+LC_i = \sum_{j} (X_{ij} \cdot b_j)
+$$
 
 Where:
 - \( LC_i \) is the linear constrained score for site \( i \),
