@@ -843,7 +843,19 @@ pixel_env<- pixel%>% dplyr::select(bio2, bio10, bio11, bio15, bio18, bio19,clay,
 scaled_pixel <- scale(pixel_env, center = env_center, scale = env_scale)
 scaled_pixel<-as.data.frame(scaled_pixel)
 ```
-Use the RDA model (_RDA_142WW_enriched_) to predict pixel adaptive value (location within the RDA space)
+Use the RDA model (_RDA_142WW_enriched_) to predict pixel adaptive value (location within the RDA space). 
+I use the _predict_ function of _vegan_ pckage _type "lc"_. 
+This function allows to compute the site (picel) scores  as a **linear combination of environmental variables**:
+
+\[
+LC_i = \sum_{j} (X_{ij} \cdot b_j)
+\]
+
+where:
+- \( LC_i \) = linear constrained score for site \( i \),
+- \( X_{ij} \) = value of environmental variable \( j \) for site \( i \),
+- \( b_j \) = regression coefficient of environmental variable \( j \).
+
 
 ```
 
@@ -946,6 +958,17 @@ for (i in 1:ncol(GEA_geno_cultivar))
 ```
 Use the enriched RDA model to predict the adaptive value of new genotypes using the function _predict_ and estimate the weighted mean value of the genotypes based on its SNP value _type = "wa"_. 
 Keep _scaling = "sites"_ as previously done for the spatial pixel estimation. 
+
+The site scores are computed as a **weighted average of species (allele) scores**:
+
+\[
+WA_i = \sum_{s} (Y_{is} \cdot u_s)
+\]
+
+where:
+- \( WA_i \) = weighted average site score for site \( i \),
+- \( Y_{is} \) = abundance (or presence-absence) of species (allele) \( s \) at site \( i \),
+- \( u_s \) = species (allele) score for species (allele) \( s \).
 
 ```
 RDAscore_cul <- predict(RDA_142WW_enriched, newdata=GEA_cultivars, type="wa", scaling = "sites")
