@@ -1006,7 +1006,7 @@ hh<-ggplot() +
   theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
 hh
 ```
-![image](https://github.com/user-attachments/assets/de7e9791-35c1-460c-939c-966949f0928f)
+![image](https://github.com/user-attachments/assets/3bed7d82-653e-4648-9157-2ef0c0c815f6)
 
 The majority of cultivars cluster together, with only a few extremes along the positive RDA1 values. Genotype groups such as Gremigliano di Fauglia, Olivastra di Populonia, and Frantoio primarily originate from the northern shore of the Mediterranean basin in Tuscany.
 Wild genotypes confirm a broader adaptive genetic variance, highlighting two key action points:
