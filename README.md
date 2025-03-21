@@ -974,6 +974,46 @@ Where:
 ```
 RDAscore_cul <- predict(RDA_142WW_enriched, newdata=GEA_cultivars, type="wa", scaling = "sites")
 ```
+Obtained the cultivar prediction we can compare in the same RDA biplot (adaptive space) the genotype predicted values of cultivars and wild
+
+```
+Tab_cultivar<- data.frame(geno = row.names(RDAscore_cul),RDAscore_cul[,1:2] )
+Tab_cultivar$type<-"cultivars"
+RDA_wild<-predict(RDA_142WW_enriched,newdata =  geno_Wild_allGEA, type = "wa", scaling = "sites")
+Tab_wild<-data.frame(geno = row.names(RDA_wild), RDA_wild[,1:2])
+Tab_wild$type<-"Wild West"
+TAB_var <- as.data.frame(scores(RDA_142WW_enriched, choices=c(1,2), display="bp"))
+
+wild_cult_pred<-rbind(Tab_wild, Tab_cultivar)
+
+hh<-ggplot() +
+  geom_hline(yintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
+  geom_vline(xintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
+  geom_point(data = wild_cult_pred, aes(x = RDA1, y = RDA2, shape = type), 
+             size = 3.5, color = "black") +  
+  
+  # 2nd Layer: Actual colored points (slightly smaller)
+  geom_point(data = wild_cult_pred, aes(x = RDA1, y = RDA2, shape = type, color = type), 
+             size = 2.8) +
+  scale_shape_manual(values=c(17, 16))+
+  scale_color_manual(values=c('#E69F00','grey48'))+
+  scale_size_manual(values=c(3,3))+
+  geom_segment(data = TAB_var, aes(xend=RDA1, yend=RDA2, x=0, y=0), colour="black", size=0.15, linetype=1, arrow = arrow(length=unit(0.20,"cm"),type = "closed")) +
+  geom_label_repel(data = TAB_var, aes(x=RDA1, y=RDA2, label = row.names(TAB_var)), size = 3, family = "Times") +
+  xlab("RDA 1: 69.7%") + ylab("RDA 2: 12.2%") +
+  #guides(legend(title="Group")) +
+  theme_bw(base_size = 11, base_family = "Times") +
+  theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
+hh
+```
+![image](https://github.com/user-attachments/assets/de7e9791-35c1-460c-939c-966949f0928f)
+
+The majority of cultivars cluster together, with only a few extremes along the positive RDA1 values. Genotype groups such as Gremigliano di Fauglia, Olivastra di Populonia, and Frantoio primarily originate from the northern shore of the Mediterranean basin in Tuscany.
+Wild genotypes confirm a broader adaptive genetic variance, highlighting two key action points:
+- Maintenance and protection of this genetic diversity.
+- Utilization of western wild germplasm in breeding programs
+
+
 From the predicted RDA values of all the cultivars I selected two extream cultivars based on RDA1 score: the first one is _Uovo di Piccione_ where the prevailing consensus suggests a Tunisian origin, _Wateken_ originally from the Siwa oasis Egypt and _Frantoio_ from Toscany at the North shore of the Mediterrenean basin.
 For these three cultivars I estimated the _genocmic offset_ as the Euclidean distance (calcolated on three RDAs) between the genotype locations in the enriched RDA space and each spatial pixel previously mapped in the enriched RDA space based on their environmental values. 
 The _z-score_ of the _GO_ results for each cultivar were geographically mapped offering the possibility to visualize the geographic area where these cultivar are better adapted.
