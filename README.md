@@ -843,10 +843,10 @@ pixel_env<- pixel%>% dplyr::select(bio2, bio10, bio11, bio15, bio18, bio19,clay,
 scaled_pixel <- scale(pixel_env, center = env_center, scale = env_scale)
 scaled_pixel<-as.data.frame(scaled_pixel)
 ```
-Use the RDA model (_RDA_142WW_enriched_) to predict pixel adaptive value (location within the RDA space). 
-I use the _predict_ function of _vegan_ pckage _type "lc"_. 
+Used the RDA model (_RDA_142WW_enriched_) to predict pixel adaptive value (position in the RDA space). 
+I used the _predict_ function of _vegan_ package _type="lc"_. 
 
-This function allows to compute the site (picel) scores  as a **linear combination of environmental variables**:
+This function allows to compute the site (pixel) scores  as a **linear combination of environmental variables**:
 
 $$
 LC_i = \sum_{j} (X_{ij} \cdot b_j)
@@ -872,17 +872,17 @@ Plot the biplot and the geographic projection
 a1 <- TAB_pixel_LC$RDA1
 a2 <- TAB_pixel_LC$RDA2
 
-# Compute the distance from the origin
+# distance from the origin
 distance <- sqrt(a1^2 + a2^2)
 
-# Assign colors based on quadrants and the 5th sector (circle radius < 0.5)
-TAB_pixel_LC$color <- ifelse(distance < 0.25, "#717171",  # 5th sector - Purple
-                             ifelse(a1 > 0 & a2 > 0, "#4DAF4A",  # Quadrant 1 - Red
-                                    ifelse(a1 < 0 & a2 > 0, "#FF7F00",  # Quadrant 2 - Blue
-                                           ifelse(a1 < 0 & a2 < 0, "#E41A1C",  # Quadrant 3 - Green
-                                                  "#377EB8"))))  # Quadrant 4 - Orange
+# Assign colors based on quadrants 
+TAB_pixel_LC$color <- ifelse(distance < 0.25, "#717171",  
+                             ifelse(a1 > 0 & a2 > 0, "#4DAF4A", 
+                                    ifelse(a1 < 0 & a2 > 0, "#FF7F00",  
+                                           ifelse(a1 < 0 & a2 < 0, "#E41A1C",  
+                                                  "#377EB8"))))  
 
-# Update ggplot with quadrant-based colors and 5th sector
+# Update ggplot with quadrant-based colors
 pp <- ggplot() +
   geom_hline(yintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
   geom_vline(xintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
