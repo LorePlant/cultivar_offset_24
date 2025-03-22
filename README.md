@@ -1008,7 +1008,8 @@ hh
 ```
 ![image](https://github.com/user-attachments/assets/3bed7d82-653e-4648-9157-2ef0c0c815f6)
 
-The majority of cultivars cluster together, with only a few extremes along the positive RDA1 values (colder temperature, higher summer precipitation and higher soil fertility). among them we found genotype such as _Gremigliano di Fauglia_, _Olivastra di Populonia_, and _Frantoio_ with origin from the northern shore of the Mediterranean basin in Tuscany.
+The majority of cultivars cluster together, with only a few extremes along the positive RDA1 values (colder temperature, higher summer precipitation and higher soil fertility). Among them we found genotype such as _Gremigliano di Fauglia_, _Olivastra di Populonia_, and _Frantoio_ with origin from the northern shore of the Mediterranean basin in Tuscany.
+
 Wild genotypes confirm a broader adaptive genetic variance, highlighting two key action points:
 - Maintenance and protection of this genetic diversity.
 - Utilization of western wild germplasm in breeding programs
@@ -1016,7 +1017,7 @@ Wild genotypes confirm a broader adaptive genetic variance, highlighting two key
 
 From the predicted RDA values of all the cultivars I selected two extream cultivars based on RDA1 score: the first one is _Uovo di Piccione_ where the prevailing consensus suggests a Tunisian origin, _Wateken_ originally from the Siwa oasis Egypt and _Frantoio_ from Toscany at the North shore of the Mediterrenean basin.
 For these three cultivars I estimated the _genocmic offset_ as the Euclidean distance (calcolated on three RDAs) between the genotype locations in the enriched RDA space and each spatial pixel previously mapped in the enriched RDA space based on their environmental values. 
-The _z-score_ of the _GO_ results for each cultivar were geographically mapped offering the possibility to visualize the geographic area where these cultivar are better adapted.
+The _z-score_ of the _GO_ results for each cultivar were geographically mapped offering the possibility to visualize and compare the geographic area where these cultivar are better adapted.
 
 > Uovo di Piccione
 ```
