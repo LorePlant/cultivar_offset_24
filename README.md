@@ -1008,7 +1008,7 @@ hh
 ```
 ![image](https://github.com/user-attachments/assets/3bed7d82-653e-4648-9157-2ef0c0c815f6)
 
-The majority of cultivars cluster together, with only a few extremes along the positive RDA1 values. Genotype groups such as Gremigliano di Fauglia, Olivastra di Populonia, and Frantoio primarily originate from the northern shore of the Mediterranean basin in Tuscany.
+The majority of cultivars cluster together, with only a few extremes along the positive RDA1 values (colder temperature, higher summer precipitation and higher soil fertility). among them we found genotype such as _Gremigliano di Fauglia_, _Olivastra di Populonia_, and _Frantoio_ with origin from the northern shore of the Mediterranean basin in Tuscany.
 Wild genotypes confirm a broader adaptive genetic variance, highlighting two key action points:
 - Maintenance and protection of this genetic diversity.
 - Utilization of western wild germplasm in breeding programs
