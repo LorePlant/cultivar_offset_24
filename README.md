@@ -329,9 +329,8 @@ qq
 
 ## RDA
 
-filtered for MAF
+To construct a landscape model with genetic and envirnmental varaible we used the Redundancy Analysis (RDA)approach. As first step we are going to enter the genotypic vcf.file (filtered MAF<0.05) and Environmental variable composed by bioclimatic variables extracted from Chelsa (https://chelsa-climate.org/downloads/) and soil variable extracted from SoilGrid 250 (https://soilgrids.org/). To ensure comparability, the environmental variable distributions will be scaled to achieve a mean of 0 and a standard deviation of 1.
 
-R code
 ```
 #enter vcf file
 geno155 <- read.vcfR("D:/vcf_file_GEA_leccino/WC156_lec24_DP10_100_miss090_ind085_mac1_MAF005.vcf.recode.vcf")#import vcf file
@@ -380,7 +379,7 @@ sqrt(vif.cca(RDAgeo_env))
 
 Redundancy analysis can be used to identify GEA based on the Mhallanoise distance of SNPs in the RDA-biplot. Within the RDA model we can effectively correct for population structure  and geography (latitude and longitude) using them as covariates in the RDA model. As population structure correction we used latent factor derived from the LEA package.
 
-As first attempt I decided to run the anlysis seperate for temperature, precipitation and soil variables.
+As first attempt I decided to run the anlysis seperate for temperature, precipitation and soil variables. Subsequently I conducted a GEA analysis leveraging all the variable together.
 
 >Temperature
 ```
@@ -693,7 +692,7 @@ library(qqman)
 GEA for soil variables resulted in 6271 SNPs FDR and among them 194 highly assoicciated Bonferroni correction
 
 ## Enriched RDA
-To visualize the adaptive differentiation among genotypes, I conducted an additional Redundancy Analysis (RDA) using only the GEA SNPs (Bonferroni correction P< 0.05/Snps) derived from the RDA model that includes all the environmental variables (temperature, precipitation and soil). A total of 232 GEA SNPs were used.
+To visualize the adaptive differentiation among genotypes, I conducted an additional Redundancy Analysis (enriched RDA) using only the GEA SNPs (Bonferroni correction P< 0.05/Snps) derived from the RDA model that includes all the environmental variables (temperature, precipitation and soil). A total of 232 GEA SNPs were used.
 By using the same GEA QTLs, we are going to represent first the RDA biplot with all genotypes including Wild from East and West mediterrenean, than RDA adaptive landscape in west mediterrenean only. 
 ```
  
