@@ -377,7 +377,7 @@ sqrt(vif.cca(RDAgeo_env))
 
 ## RDA for Genotype Environment Associations (GEA)
 
-Redundancy analysis can be used to identify GEA based on the Mhallanoise distance of SNPs in the RDA-biplot. Within the RDA model we can effectively correct for population structure  and geography (latitude and longitude) using them as covariates in the RDA model. As population structure correction we used latent factor derived from the LEA package.
+Redundancy analysis can be used to identify GEA based on the Mhallanoise distance of SNPs in the RDA-biplot. Within the RDA model we can effectively correct for population structure using it as covariates in the RDA model. For population structure correction we used latent factor derived from the LEA package.
 
 As first attempt I decided to run the anlysis seperate for temperature, precipitation and soil variables. Subsequently I conducted a GEA analysis leveraging all the variable together.
 
