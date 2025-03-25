@@ -976,6 +976,8 @@ RDAscore_cul <- predict(RDA_142WW_enriched, newdata=GEA_cultivars, type="wa", sc
 Obtained the cultivar prediction we can compare in the same RDA biplot (adaptive space) the genotype predicted values of cultivars and wild
 
 ```
+###### plot predicted cultivar and wild genotypes in the RDA space
+
 Tab_cultivar<- data.frame(geno = row.names(RDAscore_cul),RDAscore_cul[,1:2] )
 Tab_cultivar$type<-"cultivars"
 RDA_wild<-predict(RDA_142WW_enriched,newdata =  geno_Wild_allGEA, type = "wa", scaling = "sites")
@@ -984,6 +986,7 @@ Tab_wild$type<-"Wild West"
 TAB_var <- as.data.frame(scores(RDA_142WW_enriched, choices=c(1,2), display="bp"))
 
 wild_cult_pred<-rbind(Tab_wild, Tab_cultivar)
+wild_cult_pred$type <- as.factor(wild_cult_pred$type)
 
 hh <- ggplot() +
   geom_hline(yintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
@@ -1000,15 +1003,46 @@ hh <- ggplot() +
   theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
 hh
 
-```
-![image](https://github.com/user-attachments/assets/bfe89fb2-b698-4d18-9390-8cc9c46ed812)
 
+#### PCA GEA cultivar and Wild
+### genetic variation of GEA QTLs beween wild and cultivated
+
+
+wild<-data.frame(geno = row.names(geno_wild_GEA_142WW), group = "Wild West", geno_wild_GEA_142WW[,1:232])
+cultivars<-data.frame(geno = row.names(GEA_cultivars), group = "Cultivar", GEA_cultivars[,1:232])
+df<-rbind(wild, cultivars)
+library(FactoMineR)
+library(factoextra)
+res.pca_df<-PCA(df[,3:234], scale.unit = TRUE, ncp = 5, graph = TRUE)
+inddf <- get_pca_ind(res.pca_df)
+pca_data_df <- as.data.frame(inddf$coord)
+pca_data_df<-cbind(df[,1:2], pca_data_df)
+qq<-ggplot() +
+  geom_hline(yintercept=0, linetype="dashed", color = gray(.80), linewidth=0.6) +
+  geom_vline(xintercept=0, linetype="dashed", color = gray(.80), linewidth=0.6) +
+  geom_point(data = pca_data_df, aes(x=Dim.1, y=Dim.2, fill = group, shape = group),size = 2.5, color = "black", stroke = 0.8) +
+  scale_shape_manual(values = c(24,21))+
+  scale_fill_manual(values=c('#E69F00','grey48'))+
+  xlab("PC1: 23.9%") + ylab("PC2: 12.0%") +
+  guides(color=guide_legend(title="Group")) +
+  theme_bw(base_size = 11, base_family = "Times") +
+  theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
+qq
+
+
+library(ggpubr)
+ggarrange(hh,qq,nrow=1, ncol=2)
+
+```
+![image](https://github.com/user-attachments/assets/5c2b7971-537c-447d-80a6-aa34ec7d3f7a)
 
 The majority of cultivars cluster together, with only a few extremes along the positive RDA1 values (colder temperature, higher summer precipitation and higher soil fertility). Among them we found genotype such as _Gremigliano di Fauglia_, _Olivastra di Populonia_, and _Frantoio_ with origin from the northern shore of the Mediterranean basin in Tuscany.
 
 Wild genotypes confirm a broader adaptive genetic variance, highlighting two key action points:
 - Maintenance and protection of this genetic diversity.
 - Utilization of western wild germplasm in breeding programs
+
+The PCA on GEA QTLs confirms a broader wild genetic variation in GEA QTLs compared to cultivars.
 
 
 From the predicted RDA values of all the cultivars I selected two extream cultivars based on RDA1 score: the first one is _Uovo di Piccione_ where the prevailing consensus suggests a Tunisian origin, _Wateken_ originally from the Siwa oasis Egypt and _Frantoio_ from Toscany at the North shore of the Mediterrenean basin.
