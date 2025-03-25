@@ -689,7 +689,7 @@ library(qqman)
 
 
 
-GEA for soil variables resulted in 6271 SNPs FDR and among them 194 highly assoicciated Bonferroni correction
+GEA for soil variables resulted in 6271 SNPs FDR and among them 232 highly assoicciated Bonferroni correction
 
 ## Enriched RDA
 To visualize the adaptive differentiation among genotypes, I conducted an additional Redundancy Analysis (enriched RDA) using only the GEA SNPs (Bonferroni correction P< 0.05/Snps) derived from the RDA model that includes all the environmental variables (temperature, precipitation and soil). A total of 232 GEA SNPs were used.
