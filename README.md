@@ -956,7 +956,7 @@ for (i in 1:ncol(GEA_geno_cultivar))
   GEA_geno_cultivar[which(is.na(GEA_geno_cultivar[,i])),i] <- median(GEA_geno_cultivar[-which(is.na(GEA_geno_cultivar[,i])),i], na.rm=TRUE)
 }
 ```
-Use the enriched RDA model to predict the adaptive value of new genotypes using the function _predict_ and estimate the weighted mean value of the genotypes based on its SNP value _type = "wa"_. 
+Used the enriched RDA model to predict the adaptive value of new genotypes using the function _predict_. The function with _type = "wa"_ estimate the weighted mean value of the genotypes based on its SNP value. 
 Keep _scaling = "sites"_ as previously done for the spatial pixel estimation. 
 
 The site scores are computed as a **weighted average of species (allele) scores**:
