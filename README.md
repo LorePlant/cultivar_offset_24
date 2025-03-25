@@ -1000,7 +1000,8 @@ hh <- ggplot() +
   xlab("RDA 1: 69.7%") + ylab("RDA 2: 12.2%") +
   #guides(legend(title="Group")) +
   theme_bw(base_size = 11, base_family = "Times") +
-  theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
+  theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))+
+labs(title = "RDA Wild and Cultivar with GEAs")
 hh
 
 
@@ -1026,7 +1027,8 @@ qq<-ggplot() +
   xlab("PC1: 23.9%") + ylab("PC2: 12.0%") +
   guides(color=guide_legend(title="Group")) +
   theme_bw(base_size = 11, base_family = "Times") +
-  theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
+  theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))+
+  labs(title = "PCA Wild and Cultivar with GEAs")
 qq
 
 
@@ -1034,7 +1036,8 @@ library(ggpubr)
 ggarrange(hh,qq,nrow=1, ncol=2)
 
 ```
-![image](https://github.com/user-attachments/assets/5c2b7971-537c-447d-80a6-aa34ec7d3f7a)
+![image](https://github.com/user-attachments/assets/7eee21c7-989c-4b53-a47c-944364c77e21)
+
 
 The majority of cultivars cluster together, with only a few extremes along the positive RDA1 values (colder temperature, higher summer precipitation and higher soil fertility). Among them we found genotype such as _Gremigliano di Fauglia_, _Olivastra di Populonia_, and _Frantoio_ with origin from the northern shore of the Mediterranean basin in Tuscany.
 
