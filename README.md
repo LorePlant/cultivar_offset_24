@@ -985,18 +985,13 @@ TAB_var <- as.data.frame(scores(RDA_142WW_enriched, choices=c(1,2), display="bp"
 
 wild_cult_pred<-rbind(Tab_wild, Tab_cultivar)
 
-hh<-ggplot() +
+hh <- ggplot() +
   geom_hline(yintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
   geom_vline(xintercept=0, linetype="dashed", color = gray(.80), size=0.6) +
-  geom_point(data = wild_cult_pred, aes(x = RDA1, y = RDA2, shape = type), 
-             size = 3.5, color = "black") +  
-  
-  # 2nd Layer: Actual colored points (slightly smaller)
-  geom_point(data = wild_cult_pred, aes(x = RDA1, y = RDA2, shape = type, color = type), 
-             size = 2.8) +
-  scale_shape_manual(values=c(17, 16))+
-  scale_color_manual(values=c('#E69F00','grey48'))+
-  scale_size_manual(values=c(3,3))+
+  geom_point(data = wild_cult_pred, aes(x = RDA1, y = RDA2, fill = type, shape = type),size = 2.5, color = "black", stroke = 0.8)+
+  scale_shape_manual(values = c(24,21))+
+  scale_fill_manual(values=c('#E69F00','grey48'))+
+  #scale_size_manual(values=c(3,3))+
   geom_segment(data = TAB_var, aes(xend=RDA1, yend=RDA2, x=0, y=0), colour="black", size=0.15, linetype=1, arrow = arrow(length=unit(0.20,"cm"),type = "closed")) +
   geom_label_repel(data = TAB_var, aes(x=RDA1, y=RDA2, label = row.names(TAB_var)), size = 3, family = "Times") +
   xlab("RDA 1: 69.7%") + ylab("RDA 2: 12.2%") +
@@ -1004,8 +999,10 @@ hh<-ggplot() +
   theme_bw(base_size = 11, base_family = "Times") +
   theme(panel.background = element_blank(), legend.background = element_blank(), panel.grid = element_blank(), plot.background = element_blank(), legend.text=element_text(size=rel(.8)), strip.text = element_text(size=11))
 hh
+
 ```
-![image](https://github.com/user-attachments/assets/3bed7d82-653e-4648-9157-2ef0c0c815f6)
+![image](https://github.com/user-attachments/assets/bfe89fb2-b698-4d18-9390-8cc9c46ed812)
+
 
 The majority of cultivars cluster together, with only a few extremes along the positive RDA1 values (colder temperature, higher summer precipitation and higher soil fertility). Among them we found genotype such as _Gremigliano di Fauglia_, _Olivastra di Populonia_, and _Frantoio_ with origin from the northern shore of the Mediterranean basin in Tuscany.
 
