@@ -23,7 +23,7 @@ Collectively, these findings offer valuable insights for developing in-situ cons
 - [Enriched RDA](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#enriched-rda)
 - [Adaptive Landscape projection](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#adaptive-landscape-projection)
 - [Cultivar Offset](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#cultivar-offset)
-- [Cultiva geometric offset - attempt](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#cultivar-geometric-offset-attempt)
+- [Cultivar geometric offset - attempt](https://github.com/LorePlant/cultivar_offset_24/blob/main/README.md#cultivar-geometric-offset-attempt)
 
 ## vcf file preparation
 I started by filtering sites quality
