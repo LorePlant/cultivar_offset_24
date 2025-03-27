@@ -1373,6 +1373,198 @@ barplot(hist_data$counts, col = bin_colors, border = "black", space = 0,
 From these results we can conclude how the model clearly differentiate cultivars based on their origin. _Uovo di Piccione_ and _Weteken_ originally from lower latitude have low offset in souther countries like Morocco, Algeria and Souther Spain (Andalusia). On the other hand _Frantoio_ shows high offset in Morocco and better suitability in the entire Spain as well as in the souther France area.
 
 
+## Cultivar geometric offset (attempt)
+
+In this part we are going to use the geometric offset estimation. The geometric GO is estimated as the squared Euclidean distance in the RDA space. This procedure will transform the GO distribution from a normal distribution to a Chi-squared distribution, essentially compactinng value below the mean toward the mean it self.
+
+To identify a common rule to define acceptable offest or high offset for the different cultivars, we calcolated the geometric GO for the entire cultivar population (319 genotypes). 
+Here a R loop the generate the geometric GO for each cultivar
+
+```
+####### Loop cycle for GO estimation all cultivars
+
+
+# empty dataframe
+results_df <- data.frame(lat = numeric(0), long = numeric(0), 
+                         RDA1 = numeric(0), RDA2 = numeric(0), 
+                         RDA3 = numeric(0), GO = numeric(0))
+
+for (i in 1:319) {
+  GO <- data.frame(
+    lat = TAB_pixel_LC$lat, 
+    long = TAB_pixel_LC$long, 
+    RDA1 = TAB_pixel_LC$RDA1, 
+    RDA2 = TAB_pixel_LC$RDA2, 
+    RDA3 = TAB_pixel_LC$RDA3, 
+    GO = (RDAscore_cul[i,1] - TAB_pixel_LC$RDA1)^2 + 
+      (RDAscore_cul[i,2] - TAB_pixel_LC$RDA2)^2 + 
+      (RDAscore_cul[i,3] - TAB_pixel_LC$RDA3)^2
+  )
+  
+  results_df <- dplyr::bind_rows(results_df, GO) 
+}
+
+hist(results_df$GO, main = "geometric GO distribution cultivar population", las = 1, yaxt = "n")
+```
+![image](https://github.com/user-attachments/assets/2d3b51f9-3f2d-4d80-8910-e7dec82ea806)
+
+
+We then defined mean and standard deviation of the population distribution and used them to center and scale the specific cultivar geometric offset distribution. By usin this approach, for the singular cultivar distribution, negative GO will be those below the whole population mean, while positive GO will be those one over the whole population mean.
+
+In the following code I reported an example for two contrasting cultivar: Frantoio (origin north shore of the Mediterrenean) and Berri Meslal (Origin Morocco)
+
+```
+Berri_Meslal <- GEA_cultivars[rownames(GEA_cultivars) == "Berri_Meslal-3971", ]
+
+Berri_MeslalRDA <- predict(RDA_142WW_enriched, newdata=Berri_Meslal, type="wa", scaling = "sites")
+Berri_MeslalRDA<-as.data.frame(Berri_MeslalRDA)
+TAB_pixel_LC$Berri_Meslal_offset<- (Berri_MeslalRDA$RDA1 - TAB_pixel_LC$RDA1)^2 + (Berri_MeslalRDA$RDA2 - TAB_pixel_LC$RDA2)^2 + (Berri_MeslalRDA$RDA3 - TAB_pixel_LC$RDA3)^2
+hist(TAB_pixel_LC$Berri_Meslal_offset)
+TAB_pixel_LC$Berri_Meslal_offset<-scale(TAB_pixel_LC$Berri_Meslal_offset, center = culitivar_pop_center, scale = culitivar_pop_scale)
+hist(TAB_pixel_LC$Berri_Meslal_offset)
+
+# Calculate the mean and standard deviation
+mean_value <- culitivar_pop_center
+sd_value <- culitivar_pop_scale
+
+# Compute breaks for the column
+sd_breaks <- c( min(TAB_pixel_LC$Berri_Meslal_offset, na.rm = TRUE), mean_value-sd_value, mean_value, mean_value+sd_value, max(TAB_pixel_LC$Berri_Meslal_offset, na.rm = TRUE))
+
+
+
+# Create a color palette from blue to yellow
+
+color_palette <- c("#61b8ef", "#439536", "#f38b26", "#b7191c")  # 4 quantiles
+# Assign colors based on quantiles
+TAB_pixel_LC$Berri_Meslal_color <- cut(TAB_pixel_LC$Berri_Meslal_offset, breaks = sd_breaks, labels = color_palette)
+
+## plot in geographic map
+
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+# Load geographic boundaries of France, Spain, Morocco, Portugal, and Algeria
+countries <- ne_countries(scale = "medium", country = c("France", "Spain", "Morocco", "Portugal", "Algeria"), returnclass = "sf")
+
+# Remove French Guiana and Atlantic French territories
+countries <- countries[!(countries$geounit %in% c("French Guiana", "Guadeloupe", "Martinique", "Saint Pierre and Miquelon", 
+                                                  "Reunion", "Mayotte", "New Caledonia", "French Polynesia", 
+                                                  "Wallis and Futuna", "Saint Barthelemy", "Saint Martin")), ]
+
+# Convert TAB_pixel_LC to an sf object
+TAB_pixel_LC_sf <- st_as_sf(TAB_pixel_LC, coords = c("long", "lat"), crs = 4326)  # Assumes 'longitude' and 'latitude' columns exist
+# Create the map
+map <- ggplot(data = countries) +
+  geom_sf(fill = "#EBEBEB", color = "black") +  # Countries' borders
+  geom_sf(data = TAB_pixel_LC_sf, aes(color = Berri_Meslal_color), size = 0.05, show.legend = FALSE) +  # Points with custom colors
+  scale_color_identity() +  # Use exact colors from the 'color' column
+  coord_sf(xlim = c(-15, 15), ylim = c(28, 52), expand = FALSE) +  # Set geographic limits
+  theme_minimal() +
+  labs(title = "Adaptive Landscape Berri Meslal") +
+  theme(panel.background = element_blank())
+
+#jpeg(file = "C:/Users/rocchetti/Desktop/running RDA GO/adaptive_landscape_rgb.jpeg",width = 18, height = 14, units = "cm", res = 800)
+map
+
+TAB_pixel_LC$bin <- cut(TAB_pixel_LC$Berri_Meslal_offset, breaks = sd_breaks, include.lowest = TRUE)
+
+# Map bins to colors
+bin_levels <- levels(TAB_pixel_LC$bin)
+color_map <- setNames(color_palette, bin_levels)
+TAB_pixel_LC$Berri_Meslal_color <- color_map[as.character(TAB_pixel_LC$bin)]
+
+# Create histogram without plotting
+hist_data <- hist(TAB_pixel_LC$Berri_Meslal_offset, breaks = 30, plot = FALSE)
+
+# Find which bins correspond to which colors
+bin_indices <- cut(hist_data$mids, breaks = sd_breaks, include.lowest = TRUE)
+bin_colors <- color_map[as.character(bin_indices)]
+
+# Plot histogram with colors
+barplot(hist_data$counts, col = bin_colors, border = "black", space = 0, 
+        names.arg = round(hist_data$mids, 2), main = "z-score GO distribution", las = 1, yaxt = "n")
+
+
+#### Frantoio
+
+Frantoio <- GEA_cultivars[rownames(GEA_cultivars) == "Frantoio", ]
+
+FrantoioRDA <- predict(RDA_142WW_enriched, newdata=Frantoio, type="wa", scaling = "sites")
+FrantoioRDA<-as.data.frame(FrantoioRDA)
+
+TAB_pixel_LC$Frantoio_offset<- (FrantoioRDA$RDA1 - TAB_pixel_LC$RDA1)^2 + (FrantoioRDA$RDA2 - TAB_pixel_LC$RDA2)^2 + (FrantoioRDA$RDA3 - TAB_pixel_LC$RDA3)^2
+hist(TAB_pixel_LC$Frantoio_offset)
+TAB_pixel_LC$Frantoio_offset<-scale(TAB_pixel_LC$Frantoio_offset, center = culitivar_pop_center, scale = culitivar_pop_scale)
+hist(TAB_pixel_LC$Frantoio_offset)
+
+# Calculate the mean and standard deviation
+mean_value <- culitivar_pop_center
+sd_value <- culitivar_pop_scale
+
+# Compute breaks for the column
+sd_breaks <- c( min(TAB_pixel_LC$Frantoio_offset, na.rm = TRUE), mean_value-sd_value, mean_value, mean_value+sd_value, max(TAB_pixel_LC$Frantoio_offset, na.rm = TRUE))
+
+
+
+# Create a color palette from blue to yellow
+
+color_palette <- c("#61b8ef", "#439536", "#f38b26", "#b7191c")  # 4 quantiles
+# Assign colors based on quantiles
+TAB_pixel_LC$frantoio_color <- cut(TAB_pixel_LC$Frantoio_offset, breaks = sd_breaks, labels = color_palette)
+
+## plot in geographic map
+
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+# Load geographic boundaries of France, Spain, Morocco, Portugal, and Algeria
+countries <- ne_countries(scale = "medium", country = c("France", "Spain", "Morocco", "Portugal", "Algeria"), returnclass = "sf")
+
+# Remove French Guiana and Atlantic French territories
+countries <- countries[!(countries$geounit %in% c("French Guiana", "Guadeloupe", "Martinique", "Saint Pierre and Miquelon", 
+                                                  "Reunion", "Mayotte", "New Caledonia", "French Polynesia", 
+                                                  "Wallis and Futuna", "Saint Barthelemy", "Saint Martin")), ]
+
+# Convert TAB_pixel_LC to an sf object
+TAB_pixel_LC_sf <- st_as_sf(TAB_pixel_LC, coords = c("long", "lat"), crs = 4326)  # Assumes 'longitude' and 'latitude' columns exist
+# Create the map
+map <- ggplot(data = countries) +
+  geom_sf(fill = "#EBEBEB", color = "black") +  # Countries' borders
+  geom_sf(data = TAB_pixel_LC_sf, aes(color = frantoio_color), size = 0.05, show.legend = FALSE) +  # Points with custom colors
+  scale_color_identity() +  # Use exact colors from the 'color' column
+  coord_sf(xlim = c(-15, 15), ylim = c(28, 52), expand = FALSE) +  # Set geographic limits
+  theme_minimal() +
+  labs(title = "Adaptive Landscape Frantoio") +
+  theme(panel.background = element_blank())
+
+#jpeg(file = "C:/Users/rocchetti/Desktop/running RDA GO/adaptive_landscape_rgb.jpeg",width = 18, height = 14, units = "cm", res = 800)
+map
+
+TAB_pixel_LC$bin <- cut(TAB_pixel_LC$Frantoio_offset, breaks = sd_breaks, include.lowest = TRUE)
+
+# Map bins to colors
+bin_levels <- levels(TAB_pixel_LC$bin)
+color_map <- setNames(color_palette, bin_levels)
+TAB_pixel_LC$color_frantoio <- color_map[as.character(TAB_pixel_LC$bin)]
+
+# Create histogram without plotting
+hist_data <- hist(TAB_pixel_LC$Frantoio_offset, breaks = 30, plot = FALSE)
+
+# Find which bins correspond to which colors
+bin_indices <- cut(hist_data$mids, breaks = sd_breaks, include.lowest = TRUE)
+bin_colors <- color_map[as.character(bin_indices)]
+
+# Plot histogram with colors
+barplot(hist_data$counts, col = bin_colors, border = "black", space = 0, 
+        names.arg = round(hist_data$mids, 2), main = "z-score GO distribution", las = 1, yaxt = "n")
+```
+![image](https://github.com/user-attachments/assets/309c2841-25cd-4c16-ae1a-86b3f749a331)
+
+Comparing this results with the previous one we do not have meaningful changes. Essentialy the geometric offset statistic compact the value below the mean toward the mean it self making actually the model unable to differentiate among these values. 
+
+
 
 
 
