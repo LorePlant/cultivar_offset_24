@@ -1376,10 +1376,10 @@ From these results we can conclude how the model clearly differentiate cultivars
 
 ## Cultivar geometric offset (attempt)
 
-In this part we are going to use the geometric offset estimation. The geometric GO is estimated as the squared Euclidean distance in the RDA space. This procedure will transform the GO distribution from a normal distribution to a Chi-squared distribution, essentially compactinng value below the mean toward the mean it self.
+In this section, we estimate the geometric offset (GO) using the squared Euclidean distance in the RDA space. This transformation reshapes the GO distribution from a normal distribution to a Chi-squared distribution, effectively compressing values below the mean toward the mean itself.
 
-To identify a common rule to define acceptable offest or high offset for the different cultivars, we calcolated the geometric GO for the entire cultivar population (319 genotypes). 
-Here a R loop the generate the geometric GO for each cultivar
+To establish a consistent threshold for defining acceptable and high offsets across different cultivars, we calculated the geometric GO for the entire cultivar population (319 genotypes).
+Below is an R loop that generates the geometric GO for each cultivar.
 
 ```
 ####### Loop cycle for GO estimation all cultivars
@@ -1563,8 +1563,7 @@ barplot(hist_data$counts, col = bin_colors, border = "black", space = 0,
 ```
 ![image](https://github.com/user-attachments/assets/309c2841-25cd-4c16-ae1a-86b3f749a331)
 
-Comparing these results with the previous one we do not have meaningful changes. Essentialy the geometric offset statistic compact the value below the mean toward the mean it self making actually the model unable to differentiate among these values. 
-
+Comparing these results with the previous ones, we observe no significant changes. Essentially, the geometric offset statistic compresses the values below the mean toward the mean itself, effectively preventing the model from differentiating between these values.
 
 
 
