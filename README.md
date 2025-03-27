@@ -1410,9 +1410,9 @@ hist(results_df$GO, main = "geometric GO distribution cultivar population", las 
 ![image](https://github.com/user-attachments/assets/2d3b51f9-3f2d-4d80-8910-e7dec82ea806)
 
 
-We then defined mean and standard deviation of the population distribution and used them to center and scale the specific cultivar geometric offset distribution. By usin this approach, for the singular cultivar distribution, negative GO will be those below the whole population mean, while positive GO will be those one over the whole population mean.
+We then defined the mean and standard deviation of the population distribution and used these values to center and scale the specific cultivar’s geometric offset distribution. By using this approach, for each cultivar distribution, negative GO values will correspond to those below the overall population mean, while positive GO values will correspond to those above the population mean.
 
-In the following code I reported an example for two contrasting cultivar: Frantoio (origin north shore of the Mediterrenean) and Berri Meslal (Origin Morocco)
+In the following code, I provide an example using two contrasting cultivars: Frantoio (originating from the north shore of the Mediterranean) and Berri Meslal (originating from Morocco)
 
 ```
 Berri_Meslal <- GEA_cultivars[rownames(GEA_cultivars) == "Berri_Meslal-3971", ]
