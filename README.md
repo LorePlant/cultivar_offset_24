@@ -1563,7 +1563,7 @@ barplot(hist_data$counts, col = bin_colors, border = "black", space = 0,
 ```
 ![image](https://github.com/user-attachments/assets/309c2841-25cd-4c16-ae1a-86b3f749a331)
 
-Comparing this results with the previous one we do not have meaningful changes. Essentialy the geometric offset statistic compact the value below the mean toward the mean it self making actually the model unable to differentiate among these values. 
+Comparing these results with the previous one we do not have meaningful changes. Essentialy the geometric offset statistic compact the value below the mean toward the mean it self making actually the model unable to differentiate among these values. 
 
 
 
