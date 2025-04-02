@@ -1378,141 +1378,146 @@ From these results we can conclude how the model clearly differentiate cultivars
 
 ## Cultivar geometric offset (attempt)
 
-In this section, we estimate the geometric offset (GO) using the squared Euclidean distance in the RDA space. This transformation reshapes the GO distribution from a normal distribution to a Chi-squared distribution, effectively compressing values below the mean toward the mean itself.
+In this section, we estimate the geometric offset (GO) using the squared Euclidean distance in the RDA space. This transformation reshapes the GO distribution from a normal distribution to a Chi-squared distribution.
 
-To establish a consistent threshold for defining acceptable and high offsets across different cultivars, we calculated the geometric GO for the entire cultivar population (319 genotypes).
+To establish a consistent threshold for defining acceptable and high offsets across different cultivars, we calculated the geometric GO for wild reference point (142 genotypes).
+We choosed the wild population because they better represent the GEA distribution in the RDA space ( see previous results)
 Below is an R loop that generates the geometric GO for each cultivar.
 
 ```
-####### Loop cycle for GO estimation all cultivars
+####### Loop cycle for GO estimation 142 reference wild west
 
+
+TAB_gen <- data.frame(geno = row.names(scores(RDA_142WW_enriched , display = "sites")), scores(RDA_142WW_enriched, choices=c(1,2,3), display = "sites", scaling = "sites"))
 
 # empty dataframe
-results_df <- data.frame(lat = numeric(0), long = numeric(0), 
+results_df <- data.frame(lat = numeric(0), long = numeric(0),   
                          RDA1 = numeric(0), RDA2 = numeric(0), 
                          RDA3 = numeric(0), GO = numeric(0))
 
-for (i in 1:319) {
+for (i in 1:142) {
   GO <- data.frame(
     lat = TAB_pixel_LC$lat, 
     long = TAB_pixel_LC$long, 
     RDA1 = TAB_pixel_LC$RDA1, 
     RDA2 = TAB_pixel_LC$RDA2, 
     RDA3 = TAB_pixel_LC$RDA3, 
-    GO = (RDAscore_cul[i,1] - TAB_pixel_LC$RDA1)^2 + 
-      (RDAscore_cul[i,2] - TAB_pixel_LC$RDA2)^2 + 
-      (RDAscore_cul[i,3] - TAB_pixel_LC$RDA3)^2
+    GO = (TAB_gen[i,2] - TAB_pixel_LC$RDA1)^2 + 
+      (TAB_gen[i,3] - TAB_pixel_LC$RDA2)^2 + 
+      (TAB_gen[i,4] - TAB_pixel_LC$RDA3)^2
   )
   
   results_df <- dplyr::bind_rows(results_df, GO) 
 }
 
-hist(results_df$GO, main = "geometric GO distribution cultivar population", las = 1, yaxt = "n")
+hist(results_df$GO, main = "geometric GO distribution wild population", las = 1, yaxt = "n")
+
+
+
+#save parameters
+write.csv(data.frame(intersection = intersection_x, sdev = sd(results_df$GO)), "wild_pop_geomGOthreshold_param.csv", row.names = FALSE)
+params <- read.csv("culitivar_scaling.csv")
+
+#####Fit Chisquare PDF
+
+library(fitdistrplus)
+
+initial_df <- mean(results_df$GO)
+
+# Fit a chi-square distribution with the manually specified starting value for df
+fit <- fitdist(results_df$GO, "chisq", start = list(df = initial_df))
+
+hist(results_df$GO, main = "wild geometric GO", las = 1, 
+     yaxt = "n", col = "lightgray", border = "darkgray", probability = TRUE)
+axis(2, at = seq(0, 1, by = 0.1))
+
+# Generate x values for plotting the fitted chi-square PDF
+x_values <- seq(min(results_df$GO), max(results_df$GO), length.out = 100)
+pdf_values <- dchisq(x_values, df = fit$estimate["df"])
+
+# plot the fitted PDF on the histogram
+lines(x_values, pdf_values, col = "blue", lwd = 2)
+
+# Estimate and plot the CDF of the fitted chi-square distribution
+cdf_values <- pchisq(x_values, df = fit$estimate["df"])
+lines(x_values, cdf_values, col = "red", lwd = 2)
+
+
+# Find the x-value where PDF and CDF intersect
+intersection_index <- which.min(abs(pdf_values - cdf_values))  # Find closest match
+intersection_x <- x_values[intersection_index]
+intersection = intersection_x
+cat("The intersection point is approximately at x =", intersection_x, "\n")
+
+# Add a vertical line at the intersection point for visualization
+abline(v = intersection_x, col = "purple", lty = 2, lwd = 2)
+legend("topright", legend = c("PDF", "CDF", "Intersection"), 
+       col = c("blue", "red", "purple"), lty = c(1, 1, 2), lwd = c(2, 2, 2))
 ```
-![image](https://github.com/user-attachments/assets/2d3b51f9-3f2d-4d80-8910-e7dec82ea806)
+![image](https://github.com/user-attachments/assets/51c57375-32ba-4ddc-9cca-8e6a940b0f89)
 
 
-We then defined the mean and standard deviation of the population distribution and used these values to center and scale the specific cultivar’s geometric offset distribution. By using this approach, for each cultivar distribution, negative GO values will correspond to those below the overall population mean, while positive GO values will correspond to those above the population mean.
 
-In the following code, I provide an example using two contrasting cultivars: Frantoio (originating from the north shore of the Mediterranean) and Berri Meslal (originating from Morocco)
+From the density distribution we fitted the chisquared Probability Density Function (PDF). From the PDF we derived the Cumulative Density Function (CDF) which express the cumulative probability of continuos GO increment.
+The intersection point between the PDF and CDF represents a transition between frequent (low, rapidly accumulating offset) and less frequent (high, slowly accumulating offset) genomic offsets in your dataset.
+
+
+We then use the intersection point as a treshold together with the PDF standar deviation to center and scale the specific cultivar’s geometric offset distribution. By using this approach, for each cultivar distribution, negative GO values will correspond to those below the wild population threshold, while positive GO values will correspond to those above the wild population threshold.
+
+In the following code, I provide an example using two contrasting cultivars: Frantoio (originating from the north shore of the Mediterranean) and Wateken (Egypt Oasy)
 
 ```
-Berri_Meslal <- GEA_cultivars[rownames(GEA_cultivars) == "Berri_Meslal-3971", ]
-
-Berri_MeslalRDA <- predict(RDA_142WW_enriched, newdata=Berri_Meslal, type="wa", scaling = "sites")
-Berri_MeslalRDA<-as.data.frame(Berri_MeslalRDA)
-TAB_pixel_LC$Berri_Meslal_offset<- (Berri_MeslalRDA$RDA1 - TAB_pixel_LC$RDA1)^2 + (Berri_MeslalRDA$RDA2 - TAB_pixel_LC$RDA2)^2 + (Berri_MeslalRDA$RDA3 - TAB_pixel_LC$RDA3)^2
-hist(TAB_pixel_LC$Berri_Meslal_offset)
-TAB_pixel_LC$Berri_Meslal_offset<-scale(TAB_pixel_LC$Berri_Meslal_offset, center = culitivar_pop_center, scale = culitivar_pop_scale)
-hist(TAB_pixel_LC$Berri_Meslal_offset)
-
-# Calculate the mean and standard deviation
-mean_value <- culitivar_pop_center
-sd_value <- culitivar_pop_scale
-
-# Compute breaks for the column
-sd_breaks <- c( min(TAB_pixel_LC$Berri_Meslal_offset, na.rm = TRUE), mean_value-sd_value, mean_value, mean_value+sd_value, max(TAB_pixel_LC$Berri_Meslal_offset, na.rm = TRUE))
-
-
-
-# Create a color palette from blue to yellow
-
-color_palette <- c("#61b8ef", "#439536", "#f38b26", "#b7191c")  # 4 quantiles
-# Assign colors based on quantiles
-TAB_pixel_LC$Berri_Meslal_color <- cut(TAB_pixel_LC$Berri_Meslal_offset, breaks = sd_breaks, labels = color_palette)
-
-## plot in geographic map
-
-library(sf)
-library(rnaturalearth)
-library(rnaturalearthdata)
-
-# Load geographic boundaries of France, Spain, Morocco, Portugal, and Algeria
-countries <- ne_countries(scale = "medium", country = c("France", "Spain", "Morocco", "Portugal", "Algeria"), returnclass = "sf")
-
-# Remove French Guiana and Atlantic French territories
-countries <- countries[!(countries$geounit %in% c("French Guiana", "Guadeloupe", "Martinique", "Saint Pierre and Miquelon", 
-                                                  "Reunion", "Mayotte", "New Caledonia", "French Polynesia", 
-                                                  "Wallis and Futuna", "Saint Barthelemy", "Saint Martin")), ]
-
-# Convert TAB_pixel_LC to an sf object
-TAB_pixel_LC_sf <- st_as_sf(TAB_pixel_LC, coords = c("long", "lat"), crs = 4326)  # Assumes 'longitude' and 'latitude' columns exist
-# Create the map
-map <- ggplot(data = countries) +
-  geom_sf(fill = "#EBEBEB", color = "black") +  # Countries' borders
-  geom_sf(data = TAB_pixel_LC_sf, aes(color = Berri_Meslal_color), size = 0.05, show.legend = FALSE) +  # Points with custom colors
-  scale_color_identity() +  # Use exact colors from the 'color' column
-  coord_sf(xlim = c(-15, 15), ylim = c(28, 52), expand = FALSE) +  # Set geographic limits
-  theme_minimal() +
-  labs(title = "Adaptive Landscape Berri Meslal") +
-  theme(panel.background = element_blank())
-
-#jpeg(file = "C:/Users/rocchetti/Desktop/running RDA GO/adaptive_landscape_rgb.jpeg",width = 18, height = 14, units = "cm", res = 800)
-map
-
-TAB_pixel_LC$bin <- cut(TAB_pixel_LC$Berri_Meslal_offset, breaks = sd_breaks, include.lowest = TRUE)
-
-# Map bins to colors
-bin_levels <- levels(TAB_pixel_LC$bin)
-color_map <- setNames(color_palette, bin_levels)
-TAB_pixel_LC$Berri_Meslal_color <- color_map[as.character(TAB_pixel_LC$bin)]
-
-# Create histogram without plotting
-hist_data <- hist(TAB_pixel_LC$Berri_Meslal_offset, breaks = 30, plot = FALSE)
-
-# Find which bins correspond to which colors
-bin_indices <- cut(hist_data$mids, breaks = sd_breaks, include.lowest = TRUE)
-bin_colors <- color_map[as.character(bin_indices)]
-
-# Plot histogram with colors
-barplot(hist_data$counts, col = bin_colors, border = "black", space = 0, 
-        names.arg = round(hist_data$mids, 2), main = "z-score GO distribution", las = 1, yaxt = "n")
-
-
-#### Frantoio
+###### Frantoio
 
 Frantoio <- GEA_cultivars[rownames(GEA_cultivars) == "Frantoio", ]
 
 FrantoioRDA <- predict(RDA_142WW_enriched, newdata=Frantoio, type="wa", scaling = "sites")
 FrantoioRDA<-as.data.frame(FrantoioRDA)
 
+#Plot RDA Leccino position and the Pixel_LC
+FR_x <- 0.2397479  # Specify your x-coordinate
+FR_y <- 0.244145 # Specify your y-coordinate
+
+FR <- ggplot() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
+  geom_point(data = TAB_pixel_LC, aes(x = RDA1, y = RDA2, color = "gray"), size = 2) +  # Use sector colors
+  geom_segment(data = TAB_var, aes(xend = RDA1, yend = RDA2, x = 0, y = 0), 
+               colour = "black", size = 0.15, linetype = 1, 
+               arrow = arrow(length = unit(0.20, "cm"), type = "closed")) +
+  geom_label_repel(data = TAB_var, aes(x = RDA1, y = RDA2, label = row.names(TAB_var)), 
+                   size = 4, family = "Times") +
+  geom_point(aes(x = FR_x, y = FR_y), color = "orange", size = 4, shape = 17) +  # Highlight point in yellow
+  xlab("RDA 1: 69.7%") + 
+  ylab("RDA 2: 12.2%") +
+  theme_bw(base_size = 9, base_family = "Times") +
+  theme(panel.background = element_blank(), 
+        legend.background = element_blank(), 
+        panel.grid = element_blank(), 
+        plot.background = element_blank(), 
+        legend.text = element_text(size = rel(0.8)), 
+        strip.text = element_text(size = 9)) +
+  scale_color_identity()  # Use predefined colors directly
+FR
+
+
 TAB_pixel_LC$Frantoio_offset<- (FrantoioRDA$RDA1 - TAB_pixel_LC$RDA1)^2 + (FrantoioRDA$RDA2 - TAB_pixel_LC$RDA2)^2 + (FrantoioRDA$RDA3 - TAB_pixel_LC$RDA3)^2
 hist(TAB_pixel_LC$Frantoio_offset)
-TAB_pixel_LC$Frantoio_offset<-scale(TAB_pixel_LC$Frantoio_offset, center = culitivar_pop_center, scale = culitivar_pop_scale)
+TAB_pixel_LC$Frantoio_offset<-scale(TAB_pixel_LC$Frantoio_offset, center = intersection_x, scale = sd(results_df$GO))
 hist(TAB_pixel_LC$Frantoio_offset)
 
 # Calculate the mean and standard deviation
-mean_value <- culitivar_pop_center
-sd_value <- culitivar_pop_scale
+zeropoint = 0
+sd_value <- sd(results_df$GO)
 
 # Compute breaks for the column
-sd_breaks <- c( min(TAB_pixel_LC$Frantoio_offset, na.rm = TRUE), mean_value-sd_value, mean_value, mean_value+sd_value, max(TAB_pixel_LC$Frantoio_offset, na.rm = TRUE))
+sd_breaks <- c( min(TAB_pixel_LC$Frantoio_offset, na.rm = TRUE), zeropoint, zeropoint+sd_value, max(TAB_pixel_LC$Frantoio_offset, na.rm = TRUE))
 
 
 
 # Create a color palette from blue to yellow
 
-color_palette <- c("#61b8ef", "#439536", "#f38b26", "#b7191c")  # 4 quantiles
+color_palette <- c("#179c27", "#f38b26", "#8e44ad")  # 4 quantiles
 # Assign colors based on quantiles
 TAB_pixel_LC$frantoio_color <- cut(TAB_pixel_LC$Frantoio_offset, breaks = sd_breaks, labels = color_palette)
 
@@ -1562,10 +1567,115 @@ bin_colors <- color_map[as.character(bin_indices)]
 # Plot histogram with colors
 barplot(hist_data$counts, col = bin_colors, border = "black", space = 0, 
         names.arg = round(hist_data$mids, 2), main = "z-score GO distribution", las = 1, yaxt = "n")
-```
-![image](https://github.com/user-attachments/assets/309c2841-25cd-4c16-ae1a-86b3f749a331)
 
-Comparing these results with the previous ones, we observe no significant changes. Essentially, the geometric offset statistic compresses the values below the mean toward the mean itself, effectively preventing the model from differentiating between these values.
+
+########### Wateken Olive cultivar from Siwa Oasi Egypt
+
+
+
+Wateken <- GEA_cultivars[rownames(GEA_cultivars) == "Wateken1", ]
+
+WatekenRDA <- predict(RDA_142WW_enriched, newdata=Wateken, type="wa", scaling = "sites")
+WatekenRDA<-as.data.frame(WatekenRDA)
+
+#Plot RDA Leccino position and the Pixel_LC
+Wa_x <- -0.2621414  # Specify your x-coordinate
+Wa_y <- 0.1110175 # Specify your y-coordinate
+
+Wa <- ggplot() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = gray(0.80), size = 0.6) +
+  geom_point(data = TAB_pixel_LC, aes(x = RDA1, y = RDA2, color = "gray"), size = 2) +  # Use sector colors
+  geom_segment(data = TAB_var, aes(xend = RDA1, yend = RDA2, x = 0, y = 0), 
+               colour = "black", size = 0.15, linetype = 1, 
+               arrow = arrow(length = unit(0.20, "cm"), type = "closed")) +
+  geom_label_repel(data = TAB_var, aes(x = RDA1, y = RDA2, label = row.names(TAB_var)), 
+                   size = 4, family = "Times") +
+  geom_point(aes(x = Wa_x, y = Wa_y), color = "orange", size = 4, shape = 17) +  # Highlight point in yellow
+  xlab("RDA 1: 69.7%") + 
+  ylab("RDA 2: 12.2%") +
+  theme_bw(base_size = 9, base_family = "Times") +
+  theme(panel.background = element_blank(), 
+        legend.background = element_blank(), 
+        panel.grid = element_blank(), 
+        plot.background = element_blank(), 
+        legend.text = element_text(size = rel(0.8)), 
+        strip.text = element_text(size = 9)) +
+  scale_color_identity()  # Use predefined colors directly
+Wa
+
+
+TAB_pixel_LC$Wateken_offset<- (WatekenRDA$RDA1 - TAB_pixel_LC$RDA1)^2 + (WatekenRDA$RDA2 - TAB_pixel_LC$RDA2)^2 + (WatekenRDA$RDA3 - TAB_pixel_LC$RDA3)^2
+hist(TAB_pixel_LC$Wateken_offset)
+TAB_pixel_LC$Wateken_offset<-scale(TAB_pixel_LC$Wateken_offset, center = intersection_x, scale = sd(results_df$GO))
+hist(TAB_pixel_LC$Wateken_offset)
+
+# Calculate the mean and standard deviation
+zeropoint <- 0
+sd_value <- sd(results_df$GO)
+
+# Compute breaks for the column
+sd_breaks <- c( min(TAB_pixel_LC$Wateken_offset, na.rm = TRUE),  zeropoint, zeropoint+sd_value, max(TAB_pixel_LC$Wateken_offset, na.rm = TRUE))
+
+
+
+# Create a color palette from blue to yellow
+
+color_palette <- c("#179c27", "#f38b26", "#8e44ad")  # 4 quantiles
+# Assign colors based on quantiles
+TAB_pixel_LC$Wateken_color <- cut(TAB_pixel_LC$Wateken_offset, breaks = sd_breaks, labels = color_palette)
+
+## plot in geographic map
+
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+# Load geographic boundaries of France, Spain, Morocco, Portugal, and Algeria
+countries <- ne_countries(scale = "medium", country = c("France", "Spain", "Morocco", "Portugal", "Algeria"), returnclass = "sf")
+
+# Remove French Guiana and Atlantic French territories
+countries <- countries[!(countries$geounit %in% c("French Guiana", "Guadeloupe", "Martinique", "Saint Pierre and Miquelon", 
+                                                  "Reunion", "Mayotte", "New Caledonia", "French Polynesia", 
+                                                  "Wallis and Futuna", "Saint Barthelemy", "Saint Martin")), ]
+
+# Convert TAB_pixel_LC to an sf object
+TAB_pixel_LC_sf <- st_as_sf(TAB_pixel_LC, coords = c("long", "lat"), crs = 4326)  # Assumes 'longitude' and 'latitude' columns exist
+# Create the map
+map <- ggplot(data = countries) +
+  geom_sf(fill = "#EBEBEB", color = "black") +  # Countries' borders
+  geom_sf(data = TAB_pixel_LC_sf, aes(color = Wateken_color), size = 0.05, show.legend = FALSE) +  # Points with custom colors
+  scale_color_identity() +  # Use exact colors from the 'color' column
+  coord_sf(xlim = c(-15, 15), ylim = c(28, 52), expand = FALSE) +  # Set geographic limits
+  theme_minimal() +
+  labs(title = "Adaptive Landscape Wateken") +
+  theme(panel.background = element_blank())
+
+#jpeg(file = "C:/Users/rocchetti/Desktop/running RDA GO/adaptive_landscape_rgb.jpeg",width = 18, height = 14, units = "cm", res = 800)
+map
+
+TAB_pixel_LC$bin <- cut(TAB_pixel_LC$Wateken_offset, breaks = sd_breaks, include.lowest = TRUE)
+
+# Map bins to colors
+bin_levels <- levels(TAB_pixel_LC$bin)
+color_map <- setNames(color_palette, bin_levels)
+TAB_pixel_LC$color_Wateken <- color_map[as.character(TAB_pixel_LC$bin)]
+
+# Create histogram without plotting
+hist_data <- hist(TAB_pixel_LC$Wateken_offset, breaks = 30, plot = FALSE)
+
+# Find which bins correspond to which colors
+bin_indices <- cut(hist_data$mids, breaks = sd_breaks, include.lowest = TRUE)
+bin_colors <- color_map[as.character(bin_indices)]
+
+# Plot histogram with colors
+barplot(hist_data$counts, col = bin_colors, border = "black", space = 0, 
+        names.arg = round(hist_data$mids, 2), main = "z-score GO distribution", las = 1, yaxt = "n")
+```
+![image](https://github.com/user-attachments/assets/fd00b186-1f1d-4e2b-8dfa-73fbcf95c603)
+
+
+Comparing these results with the previous ones, we observe no significant changes. Essentially, the geometric offset statistic compresses the previous values below the mean toward the mean itself.
 
 
 
