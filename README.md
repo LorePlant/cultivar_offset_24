@@ -1040,7 +1040,9 @@ ggarrange(hh,qq,nrow=1, ncol=2)
 ![image](https://github.com/user-attachments/assets/7eee21c7-989c-4b53-a47c-944364c77e21)
 
 
-The majority of cultivars cluster together, with only a few extremes along the positive RDA1 values (colder temperature, higher summer precipitation and higher soil fertility). Among them we found genotype such as _Gremigliano di Fauglia_, _Olivastra di Populonia_, and _Frantoio_ with origin from the northern shore of the Mediterranean basin in Tuscany.
+The majority of cultivars form a cluster around the center of the RDA biplot, whereas wild genotypes occupy a larger space. From this result, we can deduce that cultivar genotypes have lower scores along the constrained axes, meaning they are less influenced by environmental variables. In other words, their genetic variation is not strongly structured by environmental factors. This may indicate an average genetic profile that is not specifically adapted to any particular environmental gradient.
+
+We identified a few extremes cultivars along the positive RDA1 values (colder temperature, higher summer precipitation and higher soil fertility). Among them we found genotype such as _Gremigliano di Fauglia_, _Olivastra di Populonia_, and _Frantoio_ with origin from the northern shore of the Mediterranean basin in Tuscany.
 
 Wild genotypes confirm a broader adaptive genetic variance, highlighting two key action points:
 - Maintenance and protection of this genetic diversity.
