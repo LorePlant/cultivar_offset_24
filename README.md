@@ -1378,10 +1378,10 @@ From these results we can conclude how the model clearly differentiate cultivars
 
 ## Cultivar geometric offset (attempt)
 
-In this section, we estimate the geometric offset (GO) using the squared Euclidean distance in the RDA space. This transformation reshapes the GO distribution from a normal distribution to a Chi-squared distribution.
+In this section, we estimate the geometric offset (GO) using the squared Euclidean distance in the RDA space, reshaping the GO distribution from a normal distribution to a a Chi-squared distribution. In the work of Gain et al., 2023, where the Geometric GO was proposed, authors demostrated in connection with the work of Land 1975 that under Gaussian stabilazing selection, the log of the altered fitness changes in proportion ot the quadratic sitance of the genotypes from the optimum. In other words, the fitness decline under stabilizing selection follows a Chi-Square-like shape. 
 
-To establish a consistent threshold for defining acceptable and high offsets across different cultivars, we calculated the geometric GO for wild reference point (142 genotypes).
-We choosed the wild population because they better represent the GEA distribution in the RDA space ( see previous results)
+To establish a consistent threshold for defining acceptable and high offsets across different cultivars, we calculated the geometric GO using the wild reference point (142 genotypes).
+We choosed the wild population, instead of the cultivated population because they better represent the GEA distribution in the RDA space ( see previous results)
 Below is an R loop that generates the geometric GO for each cultivar.
 
 ```
