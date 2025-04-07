@@ -1459,7 +1459,7 @@ legend("topright", legend = c("PDF", "CDF", "Intersection"),
 
 
 From the density distribution we fitted the chisquared Probability Density Function (PDF). From the PDF we derived the Cumulative Density Function (CDF) which express the cumulative probability of continuos GO increment.
-The intersection point between the PDF and CDF represents a transition between frequent (low, rapidly accumulating offset) and less frequent (high, slowly accumulating offset) genomic offsets in your dataset.
+The intersection point between the PDF and CDF represents a transition between frequent (low, rapidly accumulating offset) and less frequent (high, slowly accumulating offset) genomic offsets.
 
 
 We then use the intersection point as a treshold together with the PDF standar deviation to center and scale the specific cultivar’s geometric offset distribution. By using this approach, for each cultivar distribution, negative GO values will correspond to those below the wild population threshold, while positive GO values will correspond to those above the wild population threshold.
